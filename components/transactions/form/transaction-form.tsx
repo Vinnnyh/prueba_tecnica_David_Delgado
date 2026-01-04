@@ -2,18 +2,19 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { LoadingDots } from '@/components/ui/loading-dots';
+import { format } from 'date-fns';
 
-interface MovementFormProps {
+interface TransactionFormProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const MovementForm = ({ onClose, onSuccess }: MovementFormProps) => {
+export const TransactionForm = ({ onClose, onSuccess }: TransactionFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     concept: '',
     amount: '',
-    date: new Date().toISOString().split('T')[0],
+    date: format(new Date(), 'yyyy-MM-dd'),
     type: 'INCOME' as 'INCOME' | 'EXPENSE'
   });
 
@@ -33,6 +34,7 @@ export const MovementForm = ({ onClose, onSuccess }: MovementFormProps) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          date: `${formData.date}T12:00:00Z`,
           amount: parseFloat(formData.amount.replace(/\./g, ''))
         }),
       });
@@ -109,8 +111,8 @@ export const MovementForm = ({ onClose, onSuccess }: MovementFormProps) => {
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-gray-500 uppercase">Date</label>
             <DatePicker 
-              value={formData.date ? new Date(formData.date) : undefined}
-              onChange={(date) => setFormData({...formData, date: date ? date.toISOString().split('T')[0] : ''})}
+              value={formData.date ? new Date(formData.date + 'T12:00:00') : undefined}
+              onChange={(date) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : ''})}
             />
           </div>
 

@@ -58,8 +58,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (from || to) {
         where.date = {};
-        if (from) where.date.gte = new Date(from as string);
-        if (to) where.date.lte = new Date(to as string);
+        if (from) {
+          const fromDate = new Date(from as string);
+          fromDate.setUTCHours(0, 0, 0, 0);
+          where.date.gte = fromDate;
+        }
+        if (to) {
+          const toDate = new Date(to as string);
+          toDate.setUTCHours(23, 59, 59, 999);
+          where.date.lte = toDate;
+        }
       }
 
       // Determine granularity based on date range
@@ -90,7 +98,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           where,
           skip,
           take,
-          orderBy: { date: 'desc' },
+          orderBy: [
+            { date: 'desc' },
+            { createdAt: 'desc' }
+          ],
           include: {
             user: { select: { name: true } },
           },
@@ -119,12 +130,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ) as series_date
           )
           SELECT 
-            TO_CHAR(ds.series_date, ${dateFormat}) as name,
+            TO_CHAR(ds.series_date AT TIME ZONE 'UTC', ${dateFormat}) as name,
             COALESCE(SUM(CASE WHEN m.type = 'INCOME' THEN m.amount ELSE 0 END), 0)::FLOAT as income,
             COALESCE(SUM(CASE WHEN m.type = 'EXPENSE' THEN m.amount ELSE 0 END), 0)::FLOAT as expense
           FROM date_series ds
           LEFT JOIN movement m ON 
-            DATE_TRUNC(${granularity}, m.date) = DATE_TRUNC(${granularity}, ds.series_date)
+            DATE_TRUNC(${granularity}, m.date AT TIME ZONE 'UTC') = DATE_TRUNC(${granularity}, ds.series_date AT TIME ZONE 'UTC')
             ${effectiveUserId ? Prisma.sql`AND m."userId" = ${effectiveUserId}` : Prisma.empty}
             ${search ? Prisma.sql`AND (m.concept ILIKE ${'%' + search + '%'} OR m.type ILIKE ${'%' + search + '%'})` : Prisma.empty}
           GROUP BY ds.series_date

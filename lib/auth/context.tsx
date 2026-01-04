@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
 import { authClient } from './client';
+import { useQuery } from '@tanstack/react-query';
 
 interface AuthContextType {
   user: any;
@@ -14,78 +15,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { data: session, isPending: isSessionPending } = authClient.useSession();
-  const [role, setRole] = useState<string | null>(null);
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  const fetchAuthDetails = async (force = false) => {
-    // Try to get from localStorage first if not forcing refresh
-    if (!force) {
-      const cached = localStorage.getItem(`auth_${session?.user.id}`);
-      if (cached) {
-        try {
-          const { role: cachedRole, permissions: cachedPermissions } = JSON.parse(cached);
-          if (role !== cachedRole || JSON.stringify(permissions) !== JSON.stringify(cachedPermissions)) {
-            setRole(cachedRole);
-            setPermissions(cachedPermissions);
-          }
-          setIsAuthLoading(false);
-          return;
-        } catch (e) {
-          console.error('Error parsing cached auth', e);
-        }
-      }
-    }
-
-    if (force || !role) {
-      setIsAuthLoading(true);
-    }
-
-    try {
+  const { 
+    data: authDetails, 
+    isLoading: isAuthLoading,
+    refetch: refresh
+  } = useQuery({
+    queryKey: ['auth-me', session?.user.id],
+    queryFn: async () => {
+      if (!session) return null;
       const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        if (role !== data.role || JSON.stringify(permissions) !== JSON.stringify(data.permissions)) {
-          setRole(data.role);
-          setPermissions(data.permissions || []);
-          
-          localStorage.setItem(`auth_${session?.user.id}`, JSON.stringify({
-            role: data.role,
-            permissions: data.permissions
-          }));
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching auth details:', error);
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isSessionPending) {
-      if (session) {
-        fetchAuthDetails();
-      } else {
-        setRole(null);
-        setPermissions([]);
-        setIsAuthLoading(false);
-      }
-    }
-  }, [session, isSessionPending]);
-
-  const refresh = async () => {
-    await fetchAuthDetails(true);
-  };
+      if (!res.ok) throw new Error('Failed to fetch auth details');
+      return res.json();
+    },
+    enabled: !!session,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+  });
 
   return (
     <AuthContext.Provider value={{ 
       user: session?.user, 
-      role, 
-      permissions, 
+      role: authDetails?.role || null, 
+      permissions: authDetails?.permissions || [], 
       isLoading: isSessionPending,
-      isAuthLoading,
-      refresh 
+      isAuthLoading: isAuthLoading && !!session,
+      refresh: async () => { await refresh(); }
     }}>
       {children}
     </AuthContext.Provider>

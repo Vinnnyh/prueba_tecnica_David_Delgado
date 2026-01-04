@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import { useAuth } from '@/lib/auth/context';
 import { User, Shield, Mail, Calendar, MoreVertical, Edit2 } from 'lucide-react';
 import { LoadingDots } from '@/components/ui/loading-dots';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { PageHeader } from '@/components/shared/page-header';
 
 interface UserData {
   id: string;
@@ -22,48 +24,22 @@ interface Role {
 
 export default function AccountsPage() {
   const { user, isLoading: isSessionLoading, isAuthLoading } = useAuth();
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
 
-  const fetchData = async () => {
-    if (!user) return;
-    setIsLoading(true);
-    try {
-      const [usersRes, rolesRes] = await Promise.all([
-        fetch('/api/users'),
-        fetch('/api/roles')
-      ]);
+  const { data: users = [], isLoading: isUsersLoading } = useQuery<UserData[]>({
+    queryKey: ['users'],
+    queryFn: () => fetch('/api/users').then(res => res.json()),
+    enabled: !!user && !isSessionLoading && !isAuthLoading
+  });
 
-      if (!usersRes.ok || !rolesRes.ok) {
-        const usersError = !usersRes.ok ? await usersRes.text() : '';
-        const rolesError = !rolesRes.ok ? await rolesRes.text() : '';
-        console.error('API Error:', { 
-          usersStatus: usersRes.status, 
-          rolesStatus: rolesRes.status,
-          usersError: usersError.substring(0, 100),
-          rolesError: rolesError.substring(0, 100)
-        });
-        return;
-      }
+  const { data: roles = [], isLoading: isRolesLoading } = useQuery<Role[]>({
+    queryKey: ['roles'],
+    queryFn: () => fetch('/api/roles').then(res => res.json()),
+    enabled: !!user && !isSessionLoading && !isAuthLoading
+  });
 
-      const usersData = await usersRes.json();
-      const rolesData = await rolesRes.json();
-      setUsers(usersData);
-      setRoles(rolesData);
-    } catch (error) {
-      console.error('Error fetching data', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!isSessionLoading && !isAuthLoading && user) {
-      fetchData();
-    }
-  }, [user, isSessionLoading, isAuthLoading]);
+  const isLoading = isUsersLoading || isRolesLoading;
 
   const handleUpdateRole = async (userId: string, roleId: string) => {
     try {
@@ -74,7 +50,7 @@ export default function AccountsPage() {
       });
       if (res.ok) {
         setEditingUser(null);
-        fetchData();
+        queryClient.invalidateQueries({ queryKey: ['users'] });
       }
     } catch (error) {
       console.error('Error updating role', error);
@@ -84,10 +60,10 @@ export default function AccountsPage() {
   return (
     <PermissionGuard permission="users:view">
       <div className="flex flex-col gap-8">
-        <div>
-          <h2 className="text-2xl font-bold">Accounts Management</h2>
-          <p className="text-sm text-gray-500">Manage user roles and permissions</p>
-        </div>
+        <PageHeader 
+          title="Accounts Management" 
+          description="Manage user roles and permissions"
+        />
 
         <div className="bg-brand-card rounded-3xl border border-white/5 overflow-hidden">
           <table className="w-full text-left border-collapse">

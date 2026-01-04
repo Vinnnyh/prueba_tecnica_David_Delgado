@@ -1,7 +1,9 @@
 import { PermissionGuard } from '@/components/auth/PermissionGuard';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Edit2, Search, Filter } from 'lucide-react';
 import { LoadingDots } from '@/components/ui/loading-dots';
+import { useQuery } from '@tanstack/react-query';
+import { PageHeader } from '@/components/shared/page-header';
 
 interface User {
   id: string;
@@ -13,26 +15,18 @@ interface User {
 }
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/users')
-      .then(res => res.json())
-      .then(data => {
-        setUsers(data);
-        setIsLoading(false);
-      })
-      .catch(() => setIsLoading(false));
-  }, []);
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ['users'],
+    queryFn: () => fetch('/api/users').then(res => res.json())
+  });
 
   return (
     <PermissionGuard permission="users:view">
       <div className="flex flex-col gap-8">
-        <div>
-          <h2 className="text-2xl font-bold">User Management</h2>
-          <p className="text-sm text-gray-500">Manage application users and their roles</p>
-        </div>
+        <PageHeader 
+          title="User Management" 
+          description="Manage application users and their roles"
+        />
 
         {/* Filters & Search */}
         <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">

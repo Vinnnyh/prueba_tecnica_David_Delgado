@@ -36,7 +36,7 @@ const SidebarItem = ({ icon: Icon, label, href, active }: SidebarItemProps) => {
   );
 };
 
-export const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { user, role, permissions, isLoading, isAuthLoading, refresh } = useAuth();
   const [isSwitching, setIsSwitching] = useState(false);
@@ -105,13 +105,6 @@ export const DashboardLayout = ({ children }: { children: React.ReactNode }) => 
               active={router.pathname === '/admin-dashboard'}
             />
           )}
-          
-          <SidebarItem 
-            icon={Wallet} 
-            label="My Wallet" 
-            href="/movements" 
-            active={router.pathname === '/movements'}
-          />
           
           {canViewUsers && (
             <SidebarItem 

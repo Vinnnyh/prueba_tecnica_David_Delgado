@@ -2,7 +2,7 @@ import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, X, ChevronDown } from "lucide-react";
 import { DayPicker, DropdownProps } from "react-day-picker";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 interface DatePickerProps {
@@ -13,21 +13,10 @@ interface DatePickerProps {
 
 function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const selectedOption = options?.find((opt) => opt.value.toString() === value?.toString());
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className="relative flex-1 min-w-[110px]" ref={dropdownRef}>
+    <div className="relative flex-1 min-w-[110px]">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -38,33 +27,39 @@ function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 w-full max-h-[250px] overflow-y-auto bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[110] custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-1">
-            {options?.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  if (onChange) {
-                    const event = {
-                      target: { value: option.value.toString() },
-                    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-                    onChange(event);
-                  }
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                  option.value.toString() === value?.toString()
-                    ? "bg-brand-accent text-white"
-                    : "text-gray-300 hover:bg-brand-accent/20 hover:text-white"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+        <>
+          <div 
+            className="fixed inset-0 z-[120]" 
+            onClick={() => setIsOpen(false)} 
+          />
+          <div className="absolute top-full mt-2 left-0 w-full max-h-[250px] overflow-y-auto bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[130] custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-1">
+              {options?.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    if (onChange) {
+                      const event = {
+                        target: { value: option.value.toString() },
+                      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+                      onChange(event);
+                    }
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                    option.value.toString() === value?.toString()
+                      ? "bg-brand-accent text-white"
+                      : "text-gray-300 hover:bg-brand-accent/20 hover:text-white"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -73,24 +68,16 @@ function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
 export function DatePicker({ value, onChange, placeholder = "Pick a date" }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [month, setMonth] = useState<Date>(value || new Date());
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [prevValue, setPrevValue] = useState(value);
 
-  useEffect(() => {
+  // Adjust state during render when prop changes (No useEffect)
+  if (value !== prevValue) {
+    setPrevValue(value);
     if (value) setMonth(value);
-  }, [value]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -103,39 +90,45 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date" }: Dat
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-[100] bg-brand-card border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200">
-          <DayPicker
-            mode="single"
-            selected={value}
-            month={month}
-            onMonthChange={setMonth}
-            onSelect={(date) => {
-              onChange(date);
-              setIsOpen(false);
-            }}
-            captionLayout="dropdown"
-            startMonth={new Date(2000, 0)}
-            endMonth={new Date(2050, 11)}
-            hideNavigation
-            components={{
-              Dropdown: CustomDropdown
-            }}
+        <>
+          <div 
+            className="fixed inset-0 z-[90]" 
+            onClick={() => setIsOpen(false)} 
           />
-          <div className="flex justify-center mt-4 pt-4 border-t border-white/5">
-            <button
-              type="button"
-              onClick={() => {
-                const today = new Date();
-                onChange(today);
-                setMonth(today);
+          <div className="absolute top-full left-0 mt-2 z-[100] bg-brand-card border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200">
+            <DayPicker
+              mode="single"
+              selected={value}
+              month={month}
+              onMonthChange={setMonth}
+              onSelect={(date) => {
+                onChange(date);
+                setIsOpen(false);
               }}
-              className="text-[10px] font-bold bg-white/5 hover:bg-white/10 text-gray-300 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
-              Ir a Hoy
-            </button>
+              captionLayout="dropdown"
+              startMonth={new Date(2000, 0)}
+              endMonth={new Date(2050, 11)}
+              hideNavigation
+              components={{
+                Dropdown: CustomDropdown
+              }}
+            />
+            <div className="flex justify-center mt-4 pt-4 border-t border-white/5">
+              <button
+                type="button"
+                onClick={() => {
+                  const today = new Date();
+                  onChange(today);
+                  setMonth(today);
+                }}
+                className="text-[10px] font-bold bg-white/5 hover:bg-white/10 text-gray-300 px-3 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-accent" />
+                Ir a Hoy
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

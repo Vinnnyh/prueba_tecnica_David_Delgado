@@ -1,88 +1,51 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth/context';
-import { ArrowUpRight, ArrowDownLeft, Wallet, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { StatCard } from '@/components/dashboard/stat-card';
-import { TransactionTable } from '@/components/shared/transaction-table';
-import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
-import Papa from 'papaparse';
+import { TransactionTable } from '@/components/transactions/table/transaction-table';
+import { DashboardCharts } from '@/components/transactions/dashboard/dashboard-charts';
+import { StatsGrid } from '@/components/transactions/dashboard/stats-grid';
+import { TransactionForm } from '@/components/transactions/form/transaction-form';
+import { PageHeader } from '@/components/shared/page-header';
+import { useMovements } from '@/lib/hooks/use-movements';
+import { useExportMovements } from '@/lib/hooks/use-export-movements';
+import { useQueryClient } from '@tanstack/react-query';
 
 const Home = () => {
-  const { user, isLoading: isSessionLoading, isAuthLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const [showForm, setShowForm] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
-  const [data, setData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        pageSize: pageSize.toString(),
-        search: searchQuery,
-        ...(dateRange?.from && { from: dateRange.from.toISOString() }),
-        ...(dateRange?.to && { to: dateRange.to.toISOString() }),
-      });
+  const { data, isLoading } = useMovements({
+    page: currentPage,
+    pageSize,
+    search: searchQuery,
+    dateRange
+  });
 
-      const res = await fetch(`/api/movements?${params}`);
-      const result = await res.json();
-      setData(result);
-    } catch (error) {
-      console.error('Error fetching dashboard data', error);
-    } finally {
-      setIsLoading(false);
-    }
+  const { handleExport } = useExportMovements();
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, pageSize, searchQuery, dateRange]);
-
-  // Reset to page 1 when filters or page size change
-  useEffect(() => {
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
     setCurrentPage(1);
-  }, [searchQuery, dateRange, pageSize]);
+  };
 
-  const handleExport = async () => {
-    try {
-      // Fetch ALL movements with current filters
-      const params = new URLSearchParams({
-        all: 'true',
-        search: searchQuery,
-        ...(dateRange?.from && { from: dateRange.from.toISOString() }),
-        ...(dateRange?.to && { to: dateRange.to.toISOString() }),
-      });
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
-      const res = await fetch(`/api/movements?${params}`);
-      const result = await res.json();
-      
-      const csvData = result.movements.map((m: any) => ({
-        ID: m.id,
-        Concept: m.concept,
-        Amount: m.amount,
-        Type: m.type,
-        Date: new Date(m.date).toLocaleDateString(),
-        User: m.user?.name || 'N/A'
-      }));
-      
-      const csv = Papa.unparse(csvData);
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `movements_report_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error exporting CSV', error);
-    }
+  const handleSuccess = () => {
+    setShowForm(false);
+    queryClient.invalidateQueries({ queryKey: ['movements'] });
   };
 
   const stats = data?.stats || {
@@ -95,36 +58,9 @@ const Home = () => {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Dashboard Overview</h2>
-      </div>
+      <PageHeader title="Dashboard Overview" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Income" 
-          amount={stats.totalIncome.toLocaleString()} 
-          icon={ArrowUpRight} 
-          color="bg-brand-income/10 text-brand-income" 
-        />
-        <StatCard 
-          title="Total Outcome" 
-          amount={stats.totalOutcome.toLocaleString()} 
-          icon={ArrowDownLeft} 
-          color="bg-brand-expense/10 text-brand-expense" 
-        />
-        <StatCard 
-          title="Balance" 
-          amount={stats.balance.toLocaleString()} 
-          icon={TrendingUp} 
-          color="bg-brand-purple/10 text-brand-purple" 
-        />
-        <StatCard 
-          title="My Wallet (Total)" 
-          amount={stats.historicalBalance.toLocaleString()} 
-          icon={Wallet} 
-          color="bg-brand-accent/10 text-brand-accent" 
-        />
-      </div>
+      <StatsGrid stats={stats} />
 
       {/* Charts Section */}
       <DashboardCharts 
@@ -133,20 +69,28 @@ const Home = () => {
         totalExpense={stats.totalOutcome} 
       />
 
+      {showForm && (
+        <TransactionForm 
+          onClose={() => setShowForm(false)} 
+          onSuccess={handleSuccess} 
+        />
+      )}
+
       <TransactionTable 
         movements={data?.movements || []}
         isLoading={isLoading}
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        setSearchQuery={handleSearchChange}
         dateRange={dateRange}
-        setDateRange={setDateRange}
+        setDateRange={handleDateRangeChange}
         currentPage={currentPage}
         pageSize={pageSize}
         totalCount={data?.pagination?.total || 0}
         onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
+        onPageSizeChange={handlePageSizeChange}
         totalBalance={stats.balance}
-        onExport={handleExport}
+        onExport={() => handleExport({ searchQuery, dateRange })}
+        onAddTransaction={() => setShowForm(true)}
       />
     </div>
   );

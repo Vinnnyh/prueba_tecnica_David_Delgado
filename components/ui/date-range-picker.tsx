@@ -13,21 +13,10 @@ interface DateRangePickerProps {
 
 function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
   const selectedOption = options?.find((opt) => opt.value.toString() === value?.toString());
 
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <div className="relative flex-1 min-w-[110px]" ref={dropdownRef}>
+    <div className="relative flex-1 min-w-[110px]">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -38,33 +27,39 @@ function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 w-full max-h-[250px] overflow-y-auto bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[110] custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-1">
-            {options?.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => {
-                  if (onChange) {
-                    const event = {
-                      target: { value: option.value.toString() },
-                    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-                    onChange(event);
-                  }
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                  option.value.toString() === value?.toString()
-                    ? "bg-brand-accent text-white"
-                    : "text-gray-300 hover:bg-brand-accent/20 hover:text-white"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+        <>
+          <div 
+            className="fixed inset-0 z-[120]" 
+            onClick={() => setIsOpen(false)} 
+          />
+          <div className="absolute top-full mt-2 left-0 w-full max-h-[250px] overflow-y-auto bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[130] custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-1">
+              {options?.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    if (onChange) {
+                      const event = {
+                        target: { value: option.value.toString() },
+                      } as unknown as React.ChangeEvent<HTMLSelectElement>;
+                      onChange(event);
+                    }
+                    setIsOpen(false);
+                  }}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                    option.value.toString() === value?.toString()
+                      ? "bg-brand-accent text-white"
+                      : "text-gray-300 hover:bg-brand-accent/20 hover:text-white"
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -73,28 +68,16 @@ function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
 export function DateRangePicker({ value, onChange, className }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [month, setMonth] = React.useState<Date | undefined>(value?.from || new Date());
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [prevValueFrom, setPrevValueFrom] = React.useState(value?.from);
 
-  // Sync month when value changes externally
-  React.useEffect(() => {
-    if (value?.from) {
-      setMonth(value.from);
-    }
-  }, [value?.from]);
-
-  // Close when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // Adjust state during render when prop changes (No useEffect)
+  if (value?.from !== prevValueFrom) {
+    setPrevValueFrom(value?.from);
+    if (value?.from) setMonth(value.from);
+  }
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div className={`relative ${className}`}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center bg-white/5 border border-white/10 rounded-xl px-4 py-2 gap-3 hover:bg-white/[0.08] transition-all cursor-pointer min-w-[240px]"
@@ -127,63 +110,69 @@ export function DateRangePicker({ value, onChange, className }: DateRangePickerP
       </div>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 z-50 bg-brand-card border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200 origin-top-right">
-          <DayPicker
-            mode="range"
-            month={month}
-            onMonthChange={setMonth}
-            selected={value}
-            onSelect={onChange}
-            numberOfMonths={1}
-            captionLayout="dropdown"
-            startMonth={new Date(2000, 0)}
-            endMonth={new Date(2050, 11)}
-            hideNavigation
-            components={{
-              Dropdown: CustomDropdown
-            }}
+        <>
+          <div 
+            className="fixed inset-0 z-[40]" 
+            onClick={() => setIsOpen(false)} 
           />
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5 gap-2">
-            <div className="flex flex-wrap gap-1.5 flex-1">
-              {[
-                { label: 'Today', range: { from: startOfDay(new Date()), to: endOfDay(new Date()) } },
-                { label: '7D', range: { from: subDays(new Date(), 7), to: new Date() } },
-                { label: '30D', range: { from: subMonths(new Date(), 1), to: new Date() } },
-                { label: '1Y', range: { from: subYears(new Date(), 1), to: new Date() } },
-                { label: 'All', range: undefined },
-              ].map((preset) => {
-                const isActive = (!value && !preset.range) || 
-                  (value?.from?.toDateString() === preset.range?.from?.toDateString() && 
-                   value?.to?.toDateString() === preset.range?.to?.toDateString());
+          <div className="absolute top-full mt-2 right-0 z-50 bg-brand-card border border-white/10 rounded-2xl shadow-2xl p-4 animate-in fade-in zoom-in duration-200 origin-top-right">
+            <DayPicker
+              mode="range"
+              month={month}
+              onMonthChange={setMonth}
+              selected={value}
+              onSelect={onChange}
+              numberOfMonths={1}
+              captionLayout="dropdown"
+              startMonth={new Date(2000, 0)}
+              endMonth={new Date(2050, 11)}
+              hideNavigation
+              components={{
+                Dropdown: CustomDropdown
+              }}
+            />
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5 gap-2">
+              <div className="flex flex-wrap gap-1.5 flex-1">
+                {[
+                  { label: 'Today', range: { from: startOfDay(new Date()), to: endOfDay(new Date()) } },
+                  { label: '7D', range: { from: subDays(new Date(), 7), to: new Date() } },
+                  { label: '30D', range: { from: subMonths(new Date(), 1), to: new Date() } },
+                  { label: '1Y', range: { from: subYears(new Date(), 1), to: new Date() } },
+                  { label: 'All', range: undefined },
+                ].map((preset) => {
+                  const isActive = (!value && !preset.range) || 
+                    (value?.from?.toDateString() === preset.range?.from?.toDateString() && 
+                     value?.to?.toDateString() === preset.range?.to?.toDateString());
 
-                return (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => {
-                      onChange(preset.range);
-                      if (preset.range?.from) setMonth(preset.range.from);
-                    }}
-                    className={cn(
-                      "px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
-                      isActive 
-                        ? "bg-brand-accent text-white shadow-md shadow-brand-accent/20" 
-                        : "bg-white/5 text-gray-500 hover:text-white hover:bg-white/10"
-                    )}
-                  >
-                    {preset.label}
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        onChange(preset.range);
+                        if (preset.range?.from) setMonth(preset.range.from);
+                      }}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
+                        isActive 
+                          ? "bg-brand-accent text-white shadow-md shadow-brand-accent/20" 
+                          : "bg-white/5 text-gray-500 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="bg-brand-accent text-white px-5 py-2 rounded-xl text-[11px] font-bold hover:bg-brand-accent/80 transition-all shadow-lg shadow-brand-accent/20 shrink-0"
+              >
+                Aplicar
+              </button>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="bg-brand-accent text-white px-5 py-2 rounded-xl text-[11px] font-bold hover:bg-brand-accent/80 transition-all shadow-lg shadow-brand-accent/20 shrink-0"
-            >
-              Aplicar
-            </button>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
