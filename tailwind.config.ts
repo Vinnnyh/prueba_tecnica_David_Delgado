@@ -19,6 +19,17 @@ const config = {
     },
     extend: {
       colors: {
+        brand: {
+          bg: 'hsl(var(--brand-bg))',
+          sidebar: 'hsl(var(--brand-sidebar))',
+          card: 'hsl(var(--brand-card))',
+          accent: 'hsl(var(--brand-accent))',
+          income: 'hsl(var(--brand-income))',
+          expense: 'hsl(var(--brand-expense))',
+          cyan: 'hsl(var(--brand-cyan))',
+          indigo: 'hsl(var(--brand-indigo))',
+          purple: 'hsl(var(--brand-purple))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -67,10 +78,21 @@ const config = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'pulse-dots': {
+          '0%, 100%': {
+            transform: 'scale(0.75)',
+            opacity: '0.4',
+          },
+          '50%': {
+            transform: 'scale(1)',
+            opacity: '1',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'pulse-dots': 'pulse-dots 1.2s infinite ease-in-out',
       },
     },
   },

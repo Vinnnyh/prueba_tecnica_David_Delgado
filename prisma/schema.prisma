@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -23,9 +24,55 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  roleId        String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+  movements     Movement[]
 
   @@unique([email])
   @@map("user")
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+
+  @@map("role")
+}
+
+model Permission {
+  id          String       @id @default(cuid())
+  name        String       @unique // e.g., "users:read", "reports:all"
+  description String?
+  roles       RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permission")
+}
+
+model Movement {
+  id        String   @id @default(cuid())
+  concept   String
+  amount    Float
+  date      DateTime
+  type      String   // "INCOME" or "EXPENSE"
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("movement")
 }
 
 model Session {

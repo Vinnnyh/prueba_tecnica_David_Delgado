@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/context';
-import { ArrowUpRight, ArrowDownLeft, Wallet, TrendingUp } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Wallet, TrendingUp, ShieldCheck } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { StatCard } from '@/components/dashboard/stat-card';
 import { TransactionTable } from '@/components/shared/transaction-table';
 import { DashboardCharts } from '@/components/dashboard/dashboard-charts';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 import Papa from 'papaparse';
 
-const Home = () => {
-  const { user, isLoading: isSessionLoading, isAuthLoading } = useAuth();
+const AdminDashboard = () => {
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
   const [data, setData] = useState<any>(null);
@@ -22,6 +23,7 @@ const Home = () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
+        global: 'true', // Key difference: fetch global data
         page: currentPage.toString(),
         pageSize: pageSize.toString(),
         search: searchQuery,
@@ -33,7 +35,7 @@ const Home = () => {
       const result = await res.json();
       setData(result);
     } catch (error) {
-      console.error('Error fetching dashboard data', error);
+      console.error('Error fetching admin dashboard data', error);
     } finally {
       setIsLoading(false);
     }
@@ -43,15 +45,14 @@ const Home = () => {
     fetchData();
   }, [currentPage, pageSize, searchQuery, dateRange]);
 
-  // Reset to page 1 when filters or page size change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, dateRange, pageSize]);
 
   const handleExport = async () => {
     try {
-      // Fetch ALL movements with current filters
       const params = new URLSearchParams({
+        global: 'true',
         all: 'true',
         search: searchQuery,
         ...(dateRange?.from && { from: dateRange.from.toISOString() }),
@@ -75,7 +76,7 @@ const Home = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `movements_report_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `admin_global_report_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -94,62 +95,71 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+    <PermissionGuard permission="users:view">
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <ShieldCheck className="text-brand-accent" size={28} />
+              Admin Dashboard
+            </h2>
+            <p className="text-sm text-gray-500">Global overview of all system movements and users</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard 
+            title="Global Income" 
+            amount={stats.totalIncome.toLocaleString()} 
+            icon={ArrowUpRight} 
+            color="bg-brand-income/10 text-brand-income" 
+          />
+          <StatCard 
+            title="Global Outcome" 
+            amount={stats.totalOutcome.toLocaleString()} 
+            icon={ArrowDownLeft} 
+            color="bg-brand-expense/10 text-brand-expense" 
+          />
+          <StatCard 
+            title="System Balance" 
+            amount={stats.balance.toLocaleString()} 
+            icon={TrendingUp} 
+            color="bg-brand-purple/10 text-brand-purple" 
+          />
+          <StatCard 
+            title="Total Assets" 
+            amount={stats.historicalBalance.toLocaleString()} 
+            icon={Wallet} 
+            color="bg-brand-accent/10 text-brand-accent" 
+          />
+        </div>
+
+        <DashboardCharts 
+          chartData={stats.chartData} 
+          totalIncome={stats.totalIncome} 
+          totalExpense={stats.totalOutcome} 
+        />
+
+        <TransactionTable 
+          movements={data?.movements || []}
+          isLoading={isLoading}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          title="Global Transactions"
+          showUser={true}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          totalCount={data?.pagination?.total || 0}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          totalBalance={stats.balance}
+          onExport={handleExport}
+        />
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Income" 
-          amount={stats.totalIncome.toLocaleString()} 
-          icon={ArrowUpRight} 
-          color="bg-brand-income/10 text-brand-income" 
-        />
-        <StatCard 
-          title="Total Outcome" 
-          amount={stats.totalOutcome.toLocaleString()} 
-          icon={ArrowDownLeft} 
-          color="bg-brand-expense/10 text-brand-expense" 
-        />
-        <StatCard 
-          title="Balance" 
-          amount={stats.balance.toLocaleString()} 
-          icon={TrendingUp} 
-          color="bg-brand-purple/10 text-brand-purple" 
-        />
-        <StatCard 
-          title="My Wallet (Total)" 
-          amount={stats.historicalBalance.toLocaleString()} 
-          icon={Wallet} 
-          color="bg-brand-accent/10 text-brand-accent" 
-        />
-      </div>
-
-      {/* Charts Section */}
-      <DashboardCharts 
-        chartData={stats.chartData} 
-        totalIncome={stats.totalIncome} 
-        totalExpense={stats.totalOutcome} 
-      />
-
-      <TransactionTable 
-        movements={data?.movements || []}
-        isLoading={isLoading}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalCount={data?.pagination?.total || 0}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={setPageSize}
-        totalBalance={stats.balance}
-        onExport={handleExport}
-      />
-    </div>
+    </PermissionGuard>
   );
 };
 
-export default Home;
+export default AdminDashboard;

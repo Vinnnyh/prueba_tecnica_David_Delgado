@@ -33,6 +33,34 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+
+    /* Brand Colors */
+    --brand-bg: 242 44% 14%; /* #141332 */
+    --brand-sidebar: 240 38% 18%; /* #1d1d41 */
+    --brand-card: 240 38% 18%; /* #1d1d41 */
+    --brand-accent: 243 100% 68%; /* #635BFF */
+    --brand-income: 160 84% 39%; /* #10b981 */
+    --brand-expense: 0 84% 60%; /* #ef4444 */
+    --brand-cyan: 188 86% 53%;
+    --brand-indigo: 239 84% 67%;
+    --brand-purple: 271 91% 65%;
+
+    /* Chart & UI Helpers */
+    --chart-tooltip-bg: #151433;
+    --chart-tooltip-border: rgba(255, 255, 255, 0.1);
+    --chart-grid: rgba(255, 255, 255, 0.05);
+    --chart-text: #6b7280;
+    --chart-cursor: rgba(255, 255, 255, 0.05);
+    --white: #ffffff;
+    --black: #000000;
+    --shadow-tooltip: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+
+    /* UI Colors */
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --rdp-accent: #8B5CF6;
+    --rdp-accent-bg: rgba(139, 92, 246, 0.15);
+    --hover-white: rgba(255, 255, 255, 0.05);
   }
 
   .dark {
@@ -73,4 +101,144 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) rgba(0, 0, 0, 0.2);
+  }
 }
+
+
+.rdp-root {
+  --rdp-accent-color: var(--rdp-accent) !important;
+  --rdp-accent-background-color: var(--rdp-accent-bg) !important;
+  --rdp-day-height: 40px !important;
+  --rdp-day-width: 40px !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+}
+
+.rdp-day {
+  color: var(--gray-400) !important;
+  border-radius: 12px !important; /* More modern than 50% for some styles */
+}
+
+.rdp-selected {
+  background-color: var(--rdp-accent-color) !important;
+  color: var(--white) !important;
+  border-radius: 12px !important;
+}
+
+.rdp-range_start {
+  background-color: var(--rdp-accent-color) !important;
+  color: var(--white) !important;
+  border-radius: 12px 0 0 12px !important;
+}
+
+.rdp-range_end {
+  background-color: var(--rdp-accent-color) !important;
+  color: var(--white) !important;
+  border-radius: 0 12px 12px 0 !important;
+}
+
+
+.rdp-range_start.rdp-range_end {
+  border-radius: 12px !important;
+}
+
+
+.rdp-range_middle {
+  background-color: var(--rdp-accent-background-color) !important;
+  color: var(--white) !important;
+  border-radius: 0 !important;
+}
+
+.rdp-day_button:hover {
+  background-color: var(--hover-white) !important;
+  color: var(--white) !important;
+}
+
+.rdp-today {
+  color: var(--rdp-accent-color) !important;
+  font-weight: bold !important;
+}
+
+.rdp-head_cell {
+  color: var(--gray-500) !important;
+  font-weight: bold !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+}
+
+.rdp-button_next, .rdp-button_previous {
+  color: var(--gray-400) !important;
+}
+
+.rdp-button_next:hover, .rdp-button_previous:hover {
+  color: var(--white) !important;
+  background-color: var(--hover-white) !important;
+}
+
+.rdp-chevron {
+  fill: currentColor !important;
+}
+
+/* Dropdown Styles for Month/Year selection */
+.rdp-dropdowns {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.rdp-caption_label {
+  display: none !important; /* Hide the default label when using dropdowns */
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+
+
+
+    
+
