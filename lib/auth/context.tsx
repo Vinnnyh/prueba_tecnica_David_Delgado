@@ -24,17 +24,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryKey: ['auth-me', session?.user.id],
     queryFn: async () => {
       if (!session) return null;
-      const res = await fetch('/api/auth/me');
+      // Add a timestamp to bypass any potential browser/proxy caching
+      const res = await fetch(`/api/auth/me?t=${Date.now()}`);
       if (!res.ok) throw new Error('Failed to fetch auth details');
       return res.json();
     },
     enabled: !!session,
-    staleTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 0, // Always consider data stale to ensure fresh fetches on mount/refresh
   });
 
   return (
     <AuthContext.Provider value={{ 
-      user: session?.user, 
+      user: authDetails?.user || session?.user, 
       role: authDetails?.role || null, 
       permissions: authDetails?.permissions || [], 
       isLoading: isSessionPending,

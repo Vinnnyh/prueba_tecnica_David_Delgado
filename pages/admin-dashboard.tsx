@@ -51,7 +51,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <PermissionGuard permission="users:view">
+    <PermissionGuard permission="admin:view">
       <div className="flex flex-col gap-8">
         <PageHeader 
           title="Admin Dashboard" 

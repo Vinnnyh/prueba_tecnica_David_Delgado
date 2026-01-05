@@ -21,9 +21,20 @@ export async function getAuthDetails(userId: string) {
     },
   });
 
+  const roleName = user?.role?.name || null;
+  let permissions = user?.role?.permissions.map((rp) => rp.permission.name) || [];
+
+  // If the role is ADMIN, ensure it has all permissions from the database
+  if (roleName === 'ADMIN') {
+    const allPermissions = await prisma.permission.findMany({
+      select: { name: true }
+    });
+    permissions = allPermissions.map(p => p.name);
+  }
+
   return {
-    role: user?.role?.name || null,
-    permissions: user?.role?.permissions.map((rp) => rp.permission.name) || [],
+    role: roleName,
+    permissions,
   };
 }
 
@@ -33,7 +44,7 @@ export async function getUserPermissions(userId: string) {
 }
 
 export async function hasPermission(userId: string, permissionName: string) {
-  const permissions = await getUserPermissions(userId);
+  const { permissions } = await getAuthDetails(userId);
   return permissions.includes(permissionName);
 }
 

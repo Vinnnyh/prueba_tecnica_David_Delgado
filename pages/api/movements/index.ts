@@ -4,6 +4,74 @@ import prisma from '@/lib/prisma';
 import { hasPermission } from '@/lib/auth/permissions';
 import { Prisma } from '@prisma/client';
 
+/**
+ * @openapi
+ * /api/movements:
+ *   get:
+ *     summary: List financial movements
+ *     description: Returns a paginated list of movements. Supports filtering by date and search.
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: global
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: List of movements
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *   post:
+ *     summary: Create a new movement
+ *     description: Creates a new income or expense movement for the current user.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               concept:
+ *                 type: string
+ *               amount:
+ *                 type: number
+ *               type:
+ *                 type: string
+ *                 enum: [INCOME, EXPENSE]
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       201:
+ *         description: Movement created successfully
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const session = await auth.api.getSession({

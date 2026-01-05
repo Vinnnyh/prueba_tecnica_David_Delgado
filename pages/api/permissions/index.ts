@@ -5,13 +5,13 @@ import { hasPermission } from '@/lib/auth/permissions';
 
 /**
  * @openapi
- * /api/users:
+ * /api/permissions:
  *   get:
- *     summary: List all users
- *     description: Returns a list of all users with their roles. Requires users:view permission.
+ *     summary: List all available permissions
+ *     description: Returns a list of all permissions defined in the system. Requires roles:view permission.
  *     responses:
  *       200:
- *         description: List of users
+ *         description: List of permissions
  *       401:
  *         description: Unauthorized
  *       403:
@@ -29,21 +29,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    if (req.method === 'GET') {
-      if (!(await hasPermission(session.user.id, 'users:view'))) {
-        return res.status(403).json({ message: 'Forbidden' });
-      }
+    // Only users with roles:view can see permissions
+    if (!(await hasPermission(session.user.id, 'roles:view'))) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
 
-      const users = await prisma.user.findMany({
-        include: {
-          role: {
-            select: { id: true, name: true },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
+    if (req.method === 'GET') {
+      const permissions = await prisma.permission.findMany({
+        orderBy: { name: 'asc' },
       });
 
-      return res.status(200).json(users);
+      return res.status(200).json(permissions);
     }
 
     return res.status(405).json({ message: 'Method not allowed' });

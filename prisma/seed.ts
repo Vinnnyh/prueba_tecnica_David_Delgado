@@ -5,11 +5,14 @@ const prisma = new PrismaClient();
 async function main() {
   // 1. Define Permissions
   const permissions = [
-    { name: 'movements:view', description: 'Can view movements' },
+    { name: 'movements:view', description: 'Can view the dashboard and transaction list' },
     { name: 'movements:create', description: 'Can create new movements' },
-    { name: 'users:view', description: 'Can view user list' },
-    { name: 'users:edit', description: 'Can edit users and roles' },
-    { name: 'reports:view', description: 'Can view financial reports' },
+    { name: 'movements:export', description: 'Can export transactions to CSV/Excel' },
+    { name: 'users:view', description: 'Can view the list of users and their basic info' },
+    { name: 'users:edit', description: 'Can manage user details' },
+    { name: 'roles:view', description: 'Can view the roles and permissions page' },
+    { name: 'roles:edit', description: 'Can create, edit and delete roles' },
+    { name: 'admin:view', description: 'Can access the global admin dashboard' },
   ];
 
   console.log('Seeding permissions...');
@@ -62,20 +65,23 @@ async function main() {
     });
   }
 
-  // User only gets movements:view
-  const viewMovementsPerm = allPermissions.find((p: any) => p.name === 'movements:view');
-  if (viewMovementsPerm) {
+  // User gets movements:view and movements:create
+  const userPermissions = allPermissions.filter((p: any) => 
+    p.name === 'movements:view' || p.name === 'movements:create'
+  );
+
+  for (const p of userPermissions) {
     await prisma.rolePermission.upsert({
       where: {
         roleId_permissionId: {
           roleId: userRole.id,
-          permissionId: viewMovementsPerm.id,
+          permissionId: p.id,
         },
       },
       update: {},
       create: {
         roleId: userRole.id,
-        permissionId: viewMovementsPerm.id,
+        permissionId: p.id,
       },
     });
   }

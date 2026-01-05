@@ -112,7 +112,7 @@ export const TransactionForm = ({ onClose, onSuccess }: TransactionFormProps) =>
             <label className="text-xs font-bold text-gray-500 uppercase">Date</label>
             <DatePicker 
               value={formData.date ? new Date(formData.date + 'T12:00:00') : undefined}
-              onChange={(date) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : ''})}
+              onChange={(date: Date | undefined) => setFormData({...formData, date: date ? format(date, 'yyyy-MM-dd') : ''})}
             />
           </div>
 

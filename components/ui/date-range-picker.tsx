@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, X, ChevronDown } from "lucide-react";
 import { DateRange, DayPicker, DropdownProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { cn } from "@/lib/utils";
+import { Dropdown } from "./dropdown";
 
 interface DateRangePickerProps {
   value: DateRange | undefined;
@@ -12,56 +13,25 @@ interface DateRangePickerProps {
 }
 
 function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const selectedOption = options?.find((opt) => opt.value.toString() === value?.toString());
+  const dropdownOptions = options?.map(opt => ({ 
+    value: opt.value.toString(), 
+    label: opt.label 
+  })) || [];
 
   return (
-    <div className="relative flex-1 min-w-[110px]">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full bg-brand-card border border-white/10 rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 transition-all outline-none focus:border-brand-accent/50"
-      >
-        <span className="truncate">{selectedOption?.label || value}</span>
-        <ChevronDown size={14} className={cn("text-gray-400 transition-transform", isOpen && "rotate-180")} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div 
-            className="fixed inset-0 z-[120]" 
-            onClick={() => setIsOpen(false)} 
-          />
-          <div className="absolute top-full mt-2 left-0 w-full max-h-[250px] overflow-y-auto bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[130] custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-            <div className="p-1">
-              {options?.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => {
-                    if (onChange) {
-                      const event = {
-                        target: { value: option.value.toString() },
-                      } as unknown as React.ChangeEvent<HTMLSelectElement>;
-                      onChange(event);
-                    }
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
-                    option.value.toString() === value?.toString()
-                      ? "bg-brand-accent text-white"
-                      : "text-gray-300 hover:bg-brand-accent/20 hover:text-white"
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    <Dropdown
+      value={value?.toString() || ''}
+      options={dropdownOptions}
+      onChange={(val) => {
+        if (onChange) {
+          const event = {
+            target: { value: val },
+          } as unknown as React.ChangeEvent<HTMLSelectElement>;
+          onChange(event);
+        }
+      }}
+      className="flex-1 min-w-[110px]"
+    />
   );
 }
 
@@ -70,7 +40,6 @@ export function DateRangePicker({ value, onChange, className }: DateRangePickerP
   const [month, setMonth] = React.useState<Date | undefined>(value?.from || new Date());
   const [prevValueFrom, setPrevValueFrom] = React.useState(value?.from);
 
-  // Adjust state during render when prop changes (No useEffect)
   if (value?.from !== prevValueFrom) {
     setPrevValueFrom(value?.from);
     if (value?.from) setMonth(value.from);

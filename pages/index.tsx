@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { useMovements } from '@/lib/hooks/use-movements';
 import { useExportMovements } from '@/lib/hooks/use-export-movements';
 import { useQueryClient } from '@tanstack/react-query';
+import { PermissionGuard } from '@/components/auth/PermissionGuard';
 
 const Home = () => {
   const queryClient = useQueryClient();
@@ -57,42 +58,44 @@ const Home = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <PageHeader title="Dashboard Overview" />
+    <PermissionGuard permission="movements:view">
+      <div className="flex flex-col gap-8">
+        <PageHeader title="Dashboard Overview" />
 
-      <StatsGrid stats={stats} />
+        <StatsGrid stats={stats} />
 
-      {/* Charts Section */}
-      <DashboardCharts 
-        chartData={stats.chartData} 
-        totalIncome={stats.totalIncome} 
-        totalExpense={stats.totalOutcome} 
-      />
-
-      {showForm && (
-        <TransactionForm 
-          onClose={() => setShowForm(false)} 
-          onSuccess={handleSuccess} 
+        {/* Charts Section */}
+        <DashboardCharts 
+          chartData={stats.chartData} 
+          totalIncome={stats.totalIncome} 
+          totalExpense={stats.totalOutcome} 
         />
-      )}
 
-      <TransactionTable 
-        movements={data?.movements || []}
-        isLoading={isLoading}
-        searchQuery={searchQuery}
-        setSearchQuery={handleSearchChange}
-        dateRange={dateRange}
-        setDateRange={handleDateRangeChange}
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalCount={data?.pagination?.total || 0}
-        onPageChange={setCurrentPage}
-        onPageSizeChange={handlePageSizeChange}
-        totalBalance={stats.balance}
-        onExport={() => handleExport({ searchQuery, dateRange })}
-        onAddTransaction={() => setShowForm(true)}
-      />
-    </div>
+        {showForm && (
+          <TransactionForm 
+            onClose={() => setShowForm(false)} 
+            onSuccess={handleSuccess} 
+          />
+        )}
+
+        <TransactionTable 
+          movements={data?.movements || []}
+          isLoading={isLoading}
+          searchQuery={searchQuery}
+          setSearchQuery={handleSearchChange}
+          dateRange={dateRange}
+          setDateRange={handleDateRangeChange}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          totalCount={data?.pagination?.total || 0}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={handlePageSizeChange}
+          totalBalance={stats.balance}
+          onExport={() => handleExport({ searchQuery, dateRange })}
+          onAddTransaction={() => setShowForm(true)}
+        />
+      </div>
+    </PermissionGuard>
   );
 };
 

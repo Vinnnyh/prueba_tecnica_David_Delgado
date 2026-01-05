@@ -5,6 +5,8 @@ import { DateRange } from 'react-day-picker';
 import { LoadingDots } from '@/components/ui/loading-dots';
 import { cn } from '@/lib/utils';
 import { NewTransactionButton } from '../new-transaction-button';
+import { useAuth } from '@/lib/auth/context';
+import { Dropdown } from '@/components/ui/dropdown';
 
 interface Movement {
   id: string;
@@ -33,57 +35,21 @@ interface TransactionTableProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   totalBalance: number;
-  onExport?: () => void;
+  onExport?: () => void | Promise<void>;
   onAddTransaction?: () => void;
 }
 
 const RowsSelector = ({ value, onChange }: { value: number, onChange: (val: number) => void }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const options = [5, 10, 20, 50];
+  const options = [5, 10, 20, 50].map(opt => ({ value: opt.toString(), label: opt.toString() }));
 
   return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-white hover:bg-white/10 transition-all outline-none focus:border-brand-accent/50 min-w-[70px] justify-between"
-      >
-        <span>{value}</span>
-        <ChevronDown size={14} className={cn("text-gray-500 transition-transform", isOpen && "rotate-180")} />
-      </button>
-
-      {isOpen && (
-        <>
-          {/* Click-away overlay */}
-          <div 
-            className="fixed inset-0 z-[100]" 
-            onClick={() => setIsOpen(false)} 
-          />
-          <div className="absolute bottom-full mb-2 left-0 w-full bg-brand-card border border-white/10 rounded-xl shadow-2xl z-[110] animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="p-1">
-              {options.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    onChange(option);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors font-bold",
-                    option === value
-                      ? "bg-brand-accent text-white"
-                      : "text-gray-400 hover:bg-white/10 hover:text-white"
-                  )}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    <Dropdown
+      value={value.toString()}
+      onChange={(val) => onChange(parseInt(val))}
+      options={options}
+      position="top"
+      className="min-w-[70px]"
+    />
   );
 };
 
@@ -105,6 +71,9 @@ export const TransactionTable = ({
   onExport,
   onAddTransaction
 }: TransactionTableProps) => {
+  const { permissions, role } = useAuth();
+  const [isExporting, setIsExporting] = useState(false);
+  const canExport = role === 'ADMIN' || permissions.includes('movements:export');
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
 
@@ -143,14 +112,30 @@ export const TransactionTable = ({
 
           <div className="flex items-center gap-2">
             {/* Export Button */}
-            {onExport && (
+            {onExport && canExport && (
               <button
-                onClick={onExport}
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all border border-white/10"
+                onClick={async () => {
+                  setIsExporting(true);
+                  try {
+                    await onExport();
+                  } finally {
+                    setIsExporting(false);
+                  }
+                }}
+                disabled={isExporting}
+                className="relative flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all border border-white/10 disabled:opacity-50 overflow-hidden min-w-[100px] justify-center"
                 title="Export to CSV"
               >
-                <Download size={16} />
-                <span className="hidden sm:inline">Export</span>
+                {isExporting ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-brand-card/80 backdrop-blur-[2px]">
+                    <LoadingDots className="scale-50" dotClassName="bg-brand-accent" />
+                  </div>
+                ) : (
+                  <>
+                    <Download size={16} />
+                    <span className="hidden sm:inline">Export</span>
+                  </>
+                )}
               </button>
             )}
 
