@@ -3,17 +3,12 @@ import prisma from '@/lib/prisma';
 export async function getAuthDetails(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
+    include: {
       role: {
-        select: {
-          name: true,
+        include: {
           permissions: {
-            select: {
-              permission: {
-                select: {
-                  name: true,
-                },
-              },
+            include: {
+              permission: true,
             },
           },
         },

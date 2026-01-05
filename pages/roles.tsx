@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import { PageHeader } from '@/components/shared/page-header';
-import { RoleList } from '@/components/roles/role-list';
-import { RoleForm } from '@/components/roles/role-form';
+import { useAtomValue } from 'jotai';
+import { permissionsAtom, isAdminAtom } from '@/lib/auth/atoms';
+import { PageHeader } from '@/components/molecules/page-header';
+import { RoleList } from '@/components/organisms/role-list';
+import { RoleForm } from '@/components/organisms/role-form';
 import { useRoles, Role } from '@/lib/hooks/use-roles';
-import { PermissionGuard } from '@/components/auth/PermissionGuard';
+import { PermissionGuard } from '@/components/atoms/permission-guard';
 import { Plus, ShieldAlert } from 'lucide-react';
-import { LoadingDots } from '@/components/ui/loading-dots';
+import { LoadingDots } from '@/components/atoms/loading-dots';
 
 export default function RolesPage() {
+  const permissions = useAtomValue(permissionsAtom);
+  const isAdmin = useAtomValue(isAdminAtom);
+  const canEditRoles = isAdmin || permissions.includes('roles:edit');
+
   const { 
     roles, 
-    permissions, 
+    permissions: allPermissions, 
     isLoading, 
     createRole, 
     updateRole, 
@@ -53,13 +59,15 @@ export default function RolesPage() {
           title="Roles & Permissions" 
           description="Manage user roles and their associated access levels across the platform."
         >
-          <button
-            onClick={handleCreate}
-            className="flex items-center gap-2 bg-brand-accent hover:bg-brand-accent-hover text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-brand-accent/20"
-          >
-            <Plus size={18} />
-            New Role
-          </button>
+          {canEditRoles && (
+            <button
+              onClick={handleCreate}
+              className="flex items-center gap-2 bg-brand-accent hover:bg-brand-accent-hover text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-brand-accent/20"
+            >
+              <Plus size={18} />
+              New Role
+            </button>
+          )}
         </PageHeader>
 
         {isLoading ? (
@@ -73,6 +81,7 @@ export default function RolesPage() {
             onEdit={handleEdit} 
             onDelete={deleteRole}
             isDeleting={isDeleting}
+            canEdit={canEditRoles}
           />
         ) : (
           <div className="bg-brand-card border border-white/10 rounded-3xl p-12 flex flex-col items-center text-center">
@@ -96,10 +105,11 @@ export default function RolesPage() {
         {isFormOpen && (
           <RoleForm
             role={editingRole}
-            allPermissions={permissions}
+            allPermissions={allPermissions}
             onSave={handleSave}
             onClose={() => setIsFormOpen(false)}
             isSaving={isCreating || isUpdating}
+            canEdit={canEditRoles}
           />
         )}
       </div>

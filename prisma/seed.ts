@@ -13,6 +13,7 @@ async function main() {
     { name: 'roles:view', description: 'Can view the roles and permissions page' },
     { name: 'roles:edit', description: 'Can create, edit and delete roles' },
     { name: 'admin:view', description: 'Can access the global admin dashboard' },
+    { name: 'profile:edit', description: 'Can edit own profile details' },
   ];
 
   console.log('Seeding permissions...');
@@ -65,9 +66,9 @@ async function main() {
     });
   }
 
-  // User gets movements:view and movements:create
+
   const userPermissions = allPermissions.filter((p: any) => 
-    p.name === 'movements:view' || p.name === 'movements:create'
+    p.name === 'movements:view' || p.name === 'movements:create' || p.name === 'profile:edit'
   );
 
   for (const p of userPermissions) {

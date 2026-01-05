@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { DateRange } from 'react-day-picker';
-import { TransactionTable } from '@/components/transactions/table/transaction-table';
-import { DashboardCharts } from '@/components/transactions/dashboard/dashboard-charts';
-import { StatsGrid } from '@/components/transactions/dashboard/stats-grid';
-import { TransactionForm } from '@/components/transactions/form/transaction-form';
-import { PageHeader } from '@/components/shared/page-header';
+import { TransactionTable } from '@/components/organisms/transaction-table';
+import { DashboardCharts } from '@/components/organisms/dashboard-charts';
+import { StatsGrid } from '@/components/organisms/stats-grid';
+import { TransactionForm } from '@/components/organisms/transaction-form';
+import { PageHeader } from '@/components/molecules/page-header';
 import { useMovements } from '@/lib/hooks/use-movements';
 import { useExportMovements } from '@/lib/hooks/use-export-movements';
 import { useQueryClient } from '@tanstack/react-query';
-import { PermissionGuard } from '@/components/auth/PermissionGuard';
+import { DashboardTemplate } from '@/components/templates/dashboard-template';
 
 const Home = () => {
   const queryClient = useQueryClient();
@@ -46,6 +46,7 @@ const Home = () => {
 
   const handleSuccess = () => {
     setShowForm(false);
+    // Invalidate and refetch to ensure all components (charts, cards, table) update simultaneously
     queryClient.invalidateQueries({ queryKey: ['movements'] });
   };
 
@@ -58,26 +59,23 @@ const Home = () => {
   };
 
   return (
-    <PermissionGuard permission="movements:view">
-      <div className="flex flex-col gap-8">
-        <PageHeader title="Dashboard Overview" />
-
-        <StatsGrid stats={stats} />
-
-        {/* Charts Section */}
+    <DashboardTemplate
+      header={<PageHeader title="Dashboard Overview" />}
+      stats={<StatsGrid stats={stats} />}
+      charts={
         <DashboardCharts 
           chartData={stats.chartData} 
           totalIncome={stats.totalIncome} 
           totalExpense={stats.totalOutcome} 
         />
-
-        {showForm && (
-          <TransactionForm 
-            onClose={() => setShowForm(false)} 
-            onSuccess={handleSuccess} 
-          />
-        )}
-
+      }
+      modal={showForm ? (
+        <TransactionForm 
+          onClose={() => setShowForm(false)} 
+          onSuccess={handleSuccess} 
+        />
+      ) : null}
+      table={
         <TransactionTable 
           movements={data?.movements || []}
           isLoading={isLoading}
@@ -94,8 +92,8 @@ const Home = () => {
           onExport={() => handleExport({ searchQuery, dateRange })}
           onAddTransaction={() => setShowForm(true)}
         />
-      </div>
-    </PermissionGuard>
+      }
+    />
   );
 };
 

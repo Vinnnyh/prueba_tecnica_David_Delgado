@@ -3,7 +3,8 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, X, ChevronDown } from "lucide-react";
 import { DayPicker, DropdownProps } from "react-day-picker";
 import { useState, useRef } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/atoms/button";
 
 interface DatePickerProps {
   value?: Date;
@@ -17,14 +18,15 @@ function CustomDropdown({ value, onChange, options, ...props }: DropdownProps) {
 
   return (
     <div className="relative flex-1 min-w-[110px]">
-      <button
+      <Button
         type="button"
+        variant="secondary"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full bg-brand-card border border-white/10 rounded-xl px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 transition-all outline-none focus:border-brand-accent/50"
+        className="w-full justify-between px-3"
+        rightIcon={<ChevronDown size={14} className={cn("text-gray-400 transition-transform", isOpen && "rotate-180")} />}
       >
         <span className="truncate">{selectedOption?.label || value}</span>
-        <ChevronDown size={14} className={cn("text-gray-400 transition-transform", isOpen && "rotate-180")} />
-      </button>
+      </Button>
 
       {isOpen && (
         <>
@@ -70,6 +72,7 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date" }: Dat
   const [month, setMonth] = useState<Date>(value || new Date());
   const [prevValue, setPrevValue] = useState(value);
 
+  // Adjust state during render when prop changes (No useEffect)
   if (value !== prevValue) {
     setPrevValue(value);
     if (value) setMonth(value);
@@ -77,16 +80,17 @@ export function DatePicker({ value, onChange, placeholder = "Pick a date" }: Dat
 
   return (
     <div className="relative">
-      <button
+      <Button
         type="button"
+        variant="secondary"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm w-full text-left hover:bg-white/10 transition-all focus:outline-none focus:border-brand-accent/50"
+        className="w-full justify-start px-4 h-12"
+        leftIcon={<CalendarIcon size={16} className="text-gray-500" />}
       >
-        <CalendarIcon size={16} className="text-gray-500" />
         <span className={value ? "text-white" : "text-gray-500"}>
           {value ? format(value, "PPP") : placeholder}
         </span>
-      </button>
+      </Button>
 
       {isOpen && (
         <>

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { hasPermission } from '@/lib/auth/permissions';
 
 /**
  * @openapi
@@ -26,13 +27,15 @@ import prisma from '@/lib/prisma';
  *         description: Name is required
  *       401:
  *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       405:
  *         description: Method not allowed
  *       500:
  *         description: Internal server error
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PATCH') {
+  if (req.method !== 'PATCH' && req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
@@ -43,6 +46,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!session) {
       return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    if (!(await hasPermission(session.user.id, 'profile:edit'))) {
+      return res.status(403).json({ message: 'Forbidden' });
     }
 
     const { name, phone } = req.body;

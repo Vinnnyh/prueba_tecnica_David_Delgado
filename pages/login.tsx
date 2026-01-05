@@ -1,7 +1,8 @@
 import { authClient } from '@/lib/auth/client';
 import { Github } from 'lucide-react';
 import { useState } from 'react';
-import { LoadingDots } from '@/components/ui/loading-dots';
+import { LoadingDots } from '@/components/atoms/loading-dots';
+import { Button } from '@/components/atoms/button';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -33,20 +34,14 @@ export default function Login() {
             <p className="text-gray-400">Sign in to manage your finances</p>
           </div>
 
-          <button
+          <Button
             onClick={handleLogin}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white text-black font-bold py-4 rounded-2xl hover:bg-gray-200 transition-all disabled:opacity-50 min-h-[60px]"
+            isLoading={isLoading}
+            className="w-full py-4 rounded-2xl min-h-[60px] bg-white text-black hover:bg-gray-200"
+            leftIcon={<Github size={24} />}
           >
-            {isLoading ? (
-              <LoadingDots className="h-6" dotClassName="bg-black" />
-            ) : (
-              <>
-                <Github size={24} />
-                Continue with GitHub
-              </>
-            )}
-          </button>
+            Continue with GitHub
+          </Button>
 
           <p className="text-xs text-gray-500 text-center px-8">
             By continuing, you agree to our Terms of Service and Privacy Policy.

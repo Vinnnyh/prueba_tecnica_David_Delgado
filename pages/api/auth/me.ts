@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
 import { getAuthDetails } from '@/lib/auth/permissions';
+import prisma from '@/lib/prisma';
 
 /**
  * @openapi
@@ -26,10 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const { role, permissions } = await getAuthDetails(session.user.id);
-
-    // Fetch fresh user data from DB to ensure name/phone changes are reflected
-    const dbUser = await prisma.user.findUnique({
+    // Fetch user with role and permissions in ONE query to avoid multiple DB hits
+    const userWithAuth = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,
@@ -38,11 +37,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image: true,
         phone: true,
         roleId: true,
+        role: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
       }
     });
 
+    if (!userWithAuth) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    let role = userWithAuth.role?.name || null;
+    let permissions = userWithAuth.role?.permissions.map((rp) => rp.permission.name) || [];
+
+    // Requirement: New users should be ADMIN by default for demo purposes
+    if (!role) {
+      console.log(`User ${session.user.id} has no role. Assigning ADMIN by default.`);
+      const adminRole = await prisma.role.findUnique({
+        where: { name: 'ADMIN' },
+      });
+      
+      if (adminRole) {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { roleId: adminRole.id },
+        });
+        
+        // For ADMIN, we always want all permissions
+        const allPermissions = await prisma.permission.findMany({
+          select: { name: true }
+        });
+        role = 'ADMIN';
+        permissions = allPermissions.map(p => p.name);
+      }
+    } else if (role === 'ADMIN') {
+      // Optimization: If ADMIN, fetch all permissions once
+      const allPermissions = await prisma.permission.findMany({
+        select: { name: true }
+      });
+      permissions = allPermissions.map(p => p.name);
+    }
+
+    console.log(`Auth details for ${session.user.id}: role=${role}, permissions=${permissions.length}`);
+
+    // Clean up the user object to match expected format
+    const { role: _, ...userData } = userWithAuth;
+
     return res.status(200).json({
-      user: dbUser || session.user,
+      user: userData,
       role,
       permissions,
     });

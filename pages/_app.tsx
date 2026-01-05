@@ -1,8 +1,9 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { MainLayout } from '@/components/templates/main-layout';
 import { useRouter } from 'next/router';
-import { AuthProvider } from '@/lib/auth/context';
+import { Provider as JotaiProvider } from 'jotai';
+import { JotaiInitializer } from '@/providers/jotai-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -21,19 +22,19 @@ const App = ({ Component, pageProps }: AppProps) => {
   const noLayoutPages = ['/login', '/auth'];
   const isNoLayout = noLayoutPages.some(path => router.pathname.startsWith(path));
 
-  const content = isNoLayout ? (
-    <Component {...pageProps} />
-  ) : (
-    <AppLayout>
-      <Component {...pageProps} />
-    </AppLayout>
-  );
-
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {content}
-      </AuthProvider>
+      <JotaiProvider>
+        <JotaiInitializer>
+          {isNoLayout ? (
+            <Component {...pageProps} />
+          ) : (
+            <MainLayout key={router.asPath}>
+              <Component {...pageProps} />
+            </MainLayout>
+          )}
+        </JotaiInitializer>
+      </JotaiProvider>
     </QueryClientProvider>
   );
 };

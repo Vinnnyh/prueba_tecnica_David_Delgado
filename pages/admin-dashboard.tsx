@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
-import { TransactionTable } from '@/components/transactions/table/transaction-table';
-import { DashboardCharts } from '@/components/transactions/dashboard/dashboard-charts';
-import { PermissionGuard } from '@/components/auth/PermissionGuard';
-import { PageHeader } from '@/components/shared/page-header';
-import { StatsGrid } from '@/components/transactions/dashboard/stats-grid';
+import { TransactionTable } from '@/components/organisms/transaction-table';
+import { DashboardCharts } from '@/components/organisms/dashboard-charts';
+import { PageHeader } from '@/components/molecules/page-header';
+import { StatsGrid } from '@/components/organisms/stats-grid';
+import { DashboardTemplate } from '@/components/templates/dashboard-template';
 import { useMovements } from '@/lib/hooks/use-movements';
 import { useExportMovements } from '@/lib/hooks/use-export-movements';
 
@@ -51,14 +51,16 @@ const AdminDashboard = () => {
   };
 
   return (
-    <PermissionGuard permission="admin:view">
-      <div className="flex flex-col gap-8">
+    <DashboardTemplate
+      permission="admin:view"
+      header={
         <PageHeader 
           title="Admin Dashboard" 
           description="Global overview of all system movements and users"
           icon={ShieldCheck}
         />
-
+      }
+      stats={
         <StatsGrid 
           stats={stats} 
           titles={{
@@ -68,13 +70,15 @@ const AdminDashboard = () => {
             historical: "Total Assets"
           }}
         />
-
+      }
+      charts={
         <DashboardCharts 
           chartData={stats.chartData} 
           totalIncome={stats.totalIncome} 
           totalExpense={stats.totalOutcome} 
         />
-
+      }
+      table={
         <TransactionTable 
           movements={data?.movements || []}
           isLoading={isLoading}
@@ -97,8 +101,8 @@ const AdminDashboard = () => {
             filenamePrefix: 'admin_global_report' 
           })}
         />
-      </div>
-    </PermissionGuard>
+      }
+    />
   );
 };
 

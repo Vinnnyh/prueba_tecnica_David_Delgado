@@ -1,117 +1,95 @@
-## Prueba Técnica para Desarrollador Fullstack
+# Prevalentware - Prueba Técnica Fullstack
 
-### Introducción
+Este proyecto es una aplicación de gestión financiera que permite registrar ingresos y egresos, gestionar usuarios y visualizar reportes detallados. Implementado con una arquitectura de **Atomic Design** para asegurar escalabilidad y mantenibilidad.
 
-El objetivo de esta prueba técnica es evaluar tus habilidades en el desarrollo de una aplicación fullstack. Deberás implementar un sistema de gestión de ingresos y egresos, la gestión de usuarios y la generación de reportes. El proyecto cuenta con [wireframes](<https://www.figma.com/design/2PINjveveJJ9ZAAwxwNoRK/Wireframes-(Copy)?node-id=0-1&t=6q0Q0id8YnjH9fJt-1>) que pueden servir de guía para el candidato. Sin embargo, el diseño de la interfaz de usuario es libre.
+## 🚀 Tecnologías Utilizadas
 
-### Requisitos del Proyecto
+- **Frontend:** Next.js (Pages Router), TypeScript, Tailwind CSS.
+- **UI Components:** Shadcn UI, Lucide React.
+- **Estado Global:** Jotai (Atoms).
+- **Data Fetching:** TanStack Query (React Query).
+- **Autenticación:** Better Auth con GitHub Provider.
+- **Base de Datos:** PostgreSQL (Supabase) con Prisma ORM.
+- **Documentación:** Swagger / OpenAPI.
 
-#### Funcionalidades Principales
+## 🛠️ Configuración Local
 
-1. **Roles y Permisos**
-   - **Roles:**
-     - **Usuario:** Solo puede acceder a la gestión de movimientos.
-     - **Administrador:** Puede ver los reportes, editar usuarios y agregar movimientos.
-   - **Nota:** Para efectos de prueba, todos los nuevos usuarios deben ser automáticamente asignados con el rol "ADMIN".
+Sigue estos pasos para ejecutar el proyecto en tu máquina local:
 
-2. **Home**
-   - Página de inicio con un menú principal que permite la navegación a tres secciones:
-     - Sistema de gestión de ingresos y gastos (disponible para todos los roles)
-     - Gestión de usuarios (solo para administradores)
-     - Reportes (solo para administradores)
+### 1. Clonar el repositorio
+```bash
+git clone <url-del-repositorio>
+cd prueba-tecnica-fullstack
+```
 
-3. **Sistema de Gestión de Ingresos y Gastos**
-   - **Vista de Ingresos y Egresos**
-     - Implementar una tabla que muestre los ingresos y egresos registrados con las siguientes columnas:
-       - Concepto
-       - Monto
-       - Fecha
-       - Usuario
-     - Botón "Nuevo" para agregar un nuevo ingreso o egreso (solo para administradores).
-   - **Formulario de Nuevo Ingreso/Egreso**
-     - Formulario con los campos:
-       - Monto
-       - Concepto
-       - Fecha
-     - Botón para guardar el nuevo movimiento.
+### 2. Instalar dependencias
+```bash
+npm install
+```
 
-4. **Gestión de Usuarios** (solo para administradores)
-   - **Vista de Usuarios**
-     - Tabla que muestre la lista de usuarios con las siguientes columnas:
-       - Nombre
-       - Correo
-       - Teléfono
-       - Acciones (editar usuario)
-   - **Formulario de Edición de Usuario**
-     - Formulario con los campos:
-       - Nombre
-       - Rol
-     - Botón para guardar los cambios.
+### 3. Configurar variables de entorno
+Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
-5. **Reportes** (solo para administradores)
-   - Mostrar un gráfico de movimientos financieros.
-   - Mostrar el saldo actual.
-   - Botón para descargar el reporte en formato CSV.
+```env
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://..."
 
-### Requisitos Técnicos
+# Better Auth Configuration
+BETTER_AUTH_SECRET="generar_un_secreto_aleatorio"
+BETTER_AUTH_URL="http://localhost:3000"
 
-- **Tecnologías y Herramientas:**
-  - **Frontend:**
-    - Next.js utilizando `pages` router.
-    - TypeScript.
-    - Tailwind CSS.
-    - Shadcn para componentes de la interfaz de usuario.
-    - NextJS API routes para comunicación con el backend.
-  - **Backend:**
-    - NextJS API routes para implementar endpoints REST.
-    - Base de datos de Postgres en Supabase.
-     - **Documentación de API:** Implementar una ruta `/api/docs` que exponga la documentación del API usando OpenAPI/Swagger. Cada endpoint creado debe estar completamente documentado con sus parámetros, respuestas y ejemplos.
-   - **Protección de Datos:**
-     - Implementar control de acceso basado en roles (RBAC) para asegurar que solo los usuarios autorizados puedan acceder a ciertas funcionalidades y datos.
-     - Proteger el backend para que rechace conexiones no autenticadas.
-   - **Autenticación:**
-     - Utilizar [Better Auth](https://www.better-auth.com/) con [GitHub](https://github.com/settings/developers) como proveedor de autenticación y [Prisma](https://prisma.io) como adaptador para la autenticación por sesiones de base de datos.
-     - **IMPORTANTE:** Todos los nuevos usuarios que se registren deben ser automáticamente asignados con el rol "ADMIN" para facilitar las pruebas de la aplicación.
-   - **Pruebas unitarias**  - El candidato debe agregar al menos 3 pruebas unitarias donde considere necesario.
-  - **Despliegue:**
-    - Desplegar el proyecto en Vercel.
+# GitHub OAuth (Requerido)
+# 1. Ve a GitHub > Settings > Developer Settings > OAuth Apps > New OAuth App
+# 2. Homepage URL: http://localhost:3000
+# 3. Authorization callback URL: http://localhost:3000/api/auth/callback/github
+GITHUB_CLIENT_ID="tu_client_id"
+GITHUB_CLIENT_SECRET="tu_client_secret"
 
-### Entregables
+# App Public URL
+NEXT_PUBLIC_BETTER_AUTH_URL="http://localhost:3000"
+```
 
-1. **Código Fuente:**
-   - Repositorio en GitHub con el código fuente del proyecto.
-   - Incluir un archivo README con instrucciones claras sobre cómo ejecutar el proyecto localmente y cómo desplegarlo en Vercel.
+### 4. Preparar la Base de Datos
+El proyecto utiliza **Prisma** como adaptador para gestionar las sesiones y usuarios en la base de datos. Sincroniza el esquema:
+```bash
+npx prisma db push
+```
 
-2. **Despliegue:**
-   - Proyecto desplegado en Vercel con la URL proporcionada.
+### 5. Ejecutar el servidor de desarrollo
+```bash
+npm run dev
+```
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000).
 
-### Criterios de Evaluación
+## 📖 Documentación de la API
 
-- **Funcionalidad:**
-  - Cumplimiento de todos los requisitos funcionales.
-  - Correcta implementación del CRUD para ingresos, egresos y usuarios.
-  - Generación y descarga de reportes en formato CSV.
+La documentación interactiva de la API (Swagger) está disponible en la siguiente ruta una vez que el servidor esté corriendo:
+- [http://localhost:3000/docs](http://localhost:3000/docs)
 
-- **Calidad del Código:**
-  - Calidad y claridad del código.
-  - Uso adecuado de las mejores prácticas de desarrollo.
-  - Estructura del proyecto.
-  - Documentación completa de la API con OpenAPI/Swagger.
+## 🧪 Pruebas Unitarias e Integración
 
-- **Diseño y UX:**
-  - Usabilidad de la interfaz.
-  - Implementación de un diseño atractivo.
+El proyecto incluye una suite de pruebas para asegurar la integridad de las partes más críticas del sistema:
 
-- **Pruebas y Documentación:**
-  - Cobertura de pruebas unitarias.
-  - Calidad de los comentarios dentro del proyecto.
+1.  **`movements.test.ts` (Lógica de Negocio):** Verifica que los cálculos de saldos, ingresos y egresos sean exactos. Es vital para la fiabilidad de los reportes financieros.
+2.  **`permissions.test.ts` (Seguridad del Servidor):** Prueba la lógica de autorización en el backend, asegurando que el sistema RBAC bloquee o permita acciones según el rol del usuario en la base de datos.
+3.  **`permission-guard.test.tsx` (Integridad de UI):** Valida que los componentes de la interfaz se oculten o muestren correctamente según los permisos del usuario, garantizando una experiencia de usuario segura y coherente.
 
-- **Seguridad:**
-  - Implementación efectiva de control de acceso basado en roles (RBAC).
-  - Protección adecuada de los datos sensibles.
+Para ejecutar las pruebas:
+```bash
+npm test
+```
 
-- **Notas**:
-  - El aplicativo no debe contener diseño responsivo.
-  - El candidato puede utilizar el código cargado en este repositorio. Sin embargo, esta no es una condición necesaria y el candidato puede iniciar el proyecto de 0 si lo desea.
-  - El candidato puede cambiar las versiones de las librerías si lo considera necesario.
-  - El candidato debe compartir el acceso al repositorio de GitHub y el .env a los correos mlopera@prevalentware.com, jdsanchez@prevalentware.com y dfsorza@prevalentware.com
+## 🚢 Despliegue en Vercel
+
+1. Sube el código a un repositorio de GitHub.
+2. Conecta el repositorio en el dashboard de Vercel.
+3. Configura las variables de entorno mencionadas anteriormente en la sección "Environment Variables" de Vercel.
+4. Vercel detectará automáticamente Next.js y realizará el despliegue.
+
+---
+
+### Notas de Implementación
+- **RBAC:** Se implementó un sistema de control de acceso basado en roles y permisos granulares.
+- **Atomic Design:** Los componentes están organizados en Átomos, Moléculas, Organismos y Plantillas.
+- **Optimización:** La carga inicial de datos se optimizó para reducir latencia y evitar waterfalls de red.
+- **Demo:** Por requerimiento, todos los nuevos usuarios registrados vía GitHub son asignados automáticamente con el rol **ADMIN** y para comodidad del evaluador se agrego un switch en la navbar que permite cambiar entre **ADMIN** y **USER**.

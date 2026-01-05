@@ -25,7 +25,7 @@ export function useExportMovements() {
       const res = await fetch(`/api/movements?${params}`);
       const result = await res.json();
       
-      const csvData = result.movements.map((m: any) => ({
+      const movements = result.movements.map((m: any) => ({
         ID: m.id,
         Concept: m.concept,
         Amount: m.amount,
@@ -33,8 +33,18 @@ export function useExportMovements() {
         Date: new Date(m.date).toLocaleDateString('en-US'),
         User: m.user?.name || 'N/A'
       }));
+
+      // Add summary rows
+      const summary = [
+        {}, // Empty row
+        { Concept: 'SUMMARY REPORT' },
+        { Concept: 'Total Income', Amount: result.stats.totalIncome },
+        { Concept: 'Total Outcome', Amount: result.stats.totalOutcome },
+        { Concept: 'Current Balance', Amount: result.stats.balance },
+        { Concept: 'Historical Balance', Amount: result.stats.historicalBalance }
+      ];
       
-      const csv = Papa.unparse(csvData);
+      const csv = Papa.unparse([...movements, ...summary]);
       // Add BOM and sep=, for Excel compatibility
       const csvContent = `sep=,\r\n${csv}`;
       const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });

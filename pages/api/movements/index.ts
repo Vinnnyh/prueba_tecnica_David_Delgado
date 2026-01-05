@@ -124,6 +124,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ];
       }
 
+      // Prepare dates for queries
+      const now = new Date();
+      const startOfToday = new Date(now);
+      startOfToday.setUTCHours(0, 0, 0, 0);
+      const endOfToday = new Date(now);
+      endOfToday.setUTCHours(23, 59, 59, 999);
+
       if (from || to) {
         where.date = {};
         if (from) {
@@ -192,8 +199,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         prisma.$queryRaw`
           WITH date_series AS (
             SELECT generate_series(
-              ${from ? new Date(from as string) : Prisma.sql`(SELECT MIN(date) FROM movement)`},
-              ${to ? new Date(to as string) : new Date()},
+              ${from ? new Date(from as string) : Prisma.sql`(SELECT COALESCE(MIN(date), ${startOfToday}) FROM movement ${effectiveUserId ? Prisma.sql`WHERE "userId" = ${effectiveUserId}` : Prisma.empty})`},
+              ${to ? new Date(to as string) : endOfToday},
               ${seriesInterval}::interval
             ) as series_date
           )
@@ -212,7 +219,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ]);
 
       // Format stats
-      const getSum = (arr: any[], type: string) => arr.find(s => s.type === type)?._sum.amount || 0;
+      const getSum = (arr: any[], type: string) => {
+        const val = arr.find(s => s.type === type)?._sum.amount;
+        return val ? Number(val) : 0;
+      };
       
       const totalIncome = getSum(stats, 'INCOME');
       const totalOutcome = getSum(stats, 'EXPENSE');
