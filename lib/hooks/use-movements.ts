@@ -12,13 +12,13 @@ interface UseMovementsOptions {
 }
 
 export const useMovements = (options: UseMovementsOptions = {}) => {
-  const { 
-    page = 1, 
-    pageSize = 10, 
-    search = '', 
-    dateRange, 
+  const {
+    page = 1,
+    pageSize = 10,
+    search = '',
+    dateRange,
     global = false,
-    all = false
+    all = false,
   } = options;
 
   return useQuery({

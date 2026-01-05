@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/auth/permissions';
 
 /**
@@ -54,7 +54,10 @@ import { hasPermission } from '@/lib/auth/permissions';
  *       403:
  *         description: Forbidden
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   const { id } = req.query;
 
   if (typeof id !== 'string') {
@@ -63,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const session = await auth.api.getSession({
-      headers: new Headers(req.headers as any),
+      headers: new Headers(req.headers as Record<string, string>),
     });
 
     if (!session) {
@@ -95,8 +98,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // If it's the ADMIN role, always assign ALL permissions regardless of what was sent
           let finalPermissionIds = permissionIds;
           if (role.name === 'ADMIN') {
-            const allPerms = await tx.permission.findMany({ select: { id: true } });
-            finalPermissionIds = allPerms.map(p => p.id);
+            const allPerms = await tx.permission.findMany({
+              select: { id: true },
+            });
+            finalPermissionIds = allPerms.map((p) => p.id);
           }
 
           // Delete existing relations
@@ -142,15 +147,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (usersWithRole > 0) {
-        return res.status(400).json({ 
-          message: 'Cannot delete role because it is assigned to users. Reassign users first.' 
+        return res.status(400).json({
+          message:
+            'Cannot delete role because it is assigned to users. Reassign users first.',
         });
       }
 
       // Check if it's a protected role (optional, but good practice)
       const role = await prisma.role.findUnique({ where: { id } });
       if (role?.name === 'ADMIN') {
-        return res.status(400).json({ message: 'Cannot delete the ADMIN role.' });
+        return res
+          .status(400)
+          .json({ message: 'Cannot delete the ADMIN role.' });
       }
 
       await prisma.role.delete({
@@ -162,7 +170,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(405).json({ message: 'Method not allowed' });
   } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({ message: 'Internal server error', error: String(error) });
+    return res
+      .status(500)
+      .json({ message: 'Internal server error', error: String(error) });
   }
 }

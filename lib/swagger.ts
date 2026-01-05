@@ -6,7 +6,8 @@ const options = {
     info: {
       title: 'Prevalentware API Documentation',
       version: '1.0.0',
-      description: 'API documentation for the Prevalentware technical test project.',
+      description:
+        'API documentation for the Prevalentware technical test project.',
     },
     components: {
       securitySchemes: {

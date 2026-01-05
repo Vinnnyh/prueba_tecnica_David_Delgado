@@ -8,9 +8,9 @@ interface UserActionsProps {
 
 export const UserActions = ({ onLogout }: UserActionsProps) => {
   return (
-    <div className="flex items-center gap-4">
-      <Button 
-        variant="danger"
+    <div className='flex items-center gap-4'>
+      <Button
+        variant='danger'
         onClick={onLogout}
         leftIcon={<LogOut size={18} />}
       >

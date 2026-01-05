@@ -58,7 +58,7 @@
     /* UI Colors */
     --gray-400: #9ca3af;
     --gray-500: #6b7280;
-    --rdp-accent: #8B5CF6;
+    --rdp-accent: #8b5cf6;
     --rdp-accent-bg: rgba(139, 92, 246, 0.15);
     --hover-white: rgba(255, 255, 255, 0.05);
   }
@@ -130,7 +130,6 @@
   }
 }
 
-
 .rdp-root {
   --rdp-accent-color: var(--rdp-accent) !important;
   --rdp-accent-background-color: var(--rdp-accent-bg) !important;
@@ -163,11 +162,9 @@
   border-radius: 0 12px 12px 0 !important;
 }
 
-
 .rdp-range_start.rdp-range_end {
   border-radius: 12px !important;
 }
-
 
 .rdp-range_middle {
   background-color: var(--rdp-accent-background-color) !important;
@@ -192,11 +189,13 @@
   text-transform: uppercase !important;
 }
 
-.rdp-button_next, .rdp-button_previous {
+.rdp-button_next,
+.rdp-button_previous {
   color: var(--gray-400) !important;
 }
 
-.rdp-button_next:hover, .rdp-button_previous:hover {
+.rdp-button_next:hover,
+.rdp-button_previous:hover {
   color: var(--white) !important;
   background-color: var(--hover-white) !important;
 }
@@ -235,10 +234,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
-
-
-
-
-
-    
-

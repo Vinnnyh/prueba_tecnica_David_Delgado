@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { hasPermission } from '@/lib/auth/permissions';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 // Mock Prisma
 vi.mock('@/lib/prisma', () => ({
-  default: {
+  prisma: {
     user: {
       findUnique: vi.fn(),
     },
@@ -23,10 +23,8 @@ describe('Permissions Logic', () => {
     (prisma.user.findUnique as any).mockResolvedValue({
       role: {
         name: 'USER',
-        permissions: [
-          { permission: { name: 'users:view' } }
-        ]
-      }
+        permissions: [{ permission: { name: 'users:view' } }],
+      },
     });
 
     const result = await hasPermission('user-1', 'users:view');
@@ -37,10 +35,8 @@ describe('Permissions Logic', () => {
     (prisma.user.findUnique as any).mockResolvedValue({
       role: {
         name: 'USER',
-        permissions: [
-          { permission: { name: 'users:view' } }
-        ]
-      }
+        permissions: [{ permission: { name: 'users:view' } }],
+      },
     });
 
     const result = await hasPermission('user-1', 'admin:view');
@@ -51,18 +47,18 @@ describe('Permissions Logic', () => {
     (prisma.user.findUnique as any).mockResolvedValue({
       role: {
         name: 'ADMIN',
-        permissions: [] // Even if empty in DB for this user
-      }
+        permissions: [], // Even if empty in DB for this user
+      },
     });
 
     (prisma.permission.findMany as any).mockResolvedValue([
       { name: 'admin:view' },
-      { name: 'users:edit' }
+      { name: 'users:edit' },
     ]);
 
     const result = await hasPermission('admin-1', 'admin:view');
     expect(result).toBe(true);
-    
+
     const result2 = await hasPermission('admin-1', 'users:edit');
     expect(result2).toBe(true);
   });

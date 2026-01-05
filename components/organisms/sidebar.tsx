@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { 
-  LayoutDashboard, 
-  Users, 
-  ShieldCheck, 
-  Shield
-} from 'lucide-react';
+import { LayoutDashboard, Users, ShieldCheck, Shield } from 'lucide-react';
 import { useAtomValue } from 'jotai';
 import { userAtom, roleAtom, permissionsAtom } from '@/lib/auth/atoms';
 import { SidebarItem } from '@/components/molecules/sidebar-item';
@@ -32,7 +27,7 @@ export const Sidebar = ({ onOpenProfile }: SidebarProps) => {
   const handleSwitchRole = async () => {
     setIsSwitching(true);
     const targetRole = role === 'ADMIN' ? 'USER' : 'ADMIN';
-    
+
     try {
       const res = await fetch('/api/auth/switch-role', {
         method: 'POST',
@@ -44,8 +39,8 @@ export const Sidebar = ({ onOpenProfile }: SidebarProps) => {
         localStorage.removeItem(`auth_${user?.id}`);
         window.location.reload();
       }
-    } catch (error) {
-      console.error('Failed to switch role', error);
+    } catch {
+      // Handle error
     } finally {
       setIsSwitching(false);
     }
@@ -54,47 +49,47 @@ export const Sidebar = ({ onOpenProfile }: SidebarProps) => {
   if (!user) return null;
 
   return (
-    <aside className="w-64 h-full bg-brand-sidebar border-r border-white/5 flex flex-col p-6 gap-8 shrink-0">
+    <aside className='w-64 h-full bg-brand-sidebar border-r border-white/5 flex flex-col p-6 gap-8 shrink-0'>
       <SidebarLogo />
 
-      <nav className="flex flex-col gap-2 flex-1 overflow-y-auto pr-2">
-        <SidebarItem 
-          icon={LayoutDashboard} 
-          label="Dashboard" 
-          href="/" 
-          active={router.asPath === '/'} 
+      <nav className='flex flex-col gap-2 flex-1 overflow-y-auto pr-2'>
+        <SidebarItem
+          icon={LayoutDashboard}
+          label='Dashboard'
+          href='/'
+          active={router.asPath === '/'}
         />
 
         {canViewAdmin && (
-          <SidebarItem 
-            icon={ShieldCheck} 
-            label="Admin Panel" 
-            href="/admin-dashboard" 
+          <SidebarItem
+            icon={ShieldCheck}
+            label='Admin Panel'
+            href='/admin-dashboard'
             active={router.asPath === '/admin-dashboard'}
           />
         )}
-        
+
         {canViewUsers && (
-          <SidebarItem 
-            icon={Users} 
-            label="Accounts" 
-            href="/accounts" 
+          <SidebarItem
+            icon={Users}
+            label='Accounts'
+            href='/accounts'
             active={router.asPath === '/accounts'}
           />
         )}
 
         {canViewRoles && (
-          <SidebarItem 
-            icon={Shield} 
-            label="Roles" 
-            href="/roles" 
+          <SidebarItem
+            icon={Shield}
+            label='Roles'
+            href='/roles'
             active={router.asPath === '/roles'}
           />
         )}
-        
-        <div className="my-4 border-t border-white/5" />
-        
-        <RoleSwitcher 
+
+        <div className='my-4 border-t border-white/5' />
+
+        <RoleSwitcher
           role={role}
           isAdmin={isAdmin}
           isSwitching={isSwitching}
@@ -102,10 +97,7 @@ export const Sidebar = ({ onOpenProfile }: SidebarProps) => {
         />
       </nav>
 
-      <SidebarUser 
-        user={user}
-        onClick={onOpenProfile}
-      />
+      <SidebarUser user={user} onClick={onOpenProfile} />
     </aside>
   );
 };

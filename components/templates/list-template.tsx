@@ -10,11 +10,11 @@ interface ListTemplateProps {
 export const ListTemplate = ({
   header,
   content,
-  permission
+  permission,
 }: ListTemplateProps) => {
   return (
     <PermissionGuard permission={permission}>
-      <div className="flex flex-col gap-8">
+      <div className='flex flex-col gap-8'>
         {header}
         {content}
       </div>

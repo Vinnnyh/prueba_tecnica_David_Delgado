@@ -1,10 +1,19 @@
 import { useEffect } from 'react';
 import { useSetAtom } from 'jotai';
-import { userAtom, roleAtom, permissionsAtom, isSessionLoadingAtom } from '@/lib/auth/atoms';
+import {
+  userAtom,
+  roleAtom,
+  permissionsAtom,
+  isSessionLoadingAtom,
+} from '@/lib/auth/atoms';
 import { authClient } from '@/lib/auth/client';
 import { useQuery } from '@tanstack/react-query';
 
-export const JotaiInitializer = ({ children }: { children: React.ReactNode }) => {
+export const JotaiInitializer = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const setUser = useSetAtom(userAtom);
   const setRole = useSetAtom(roleAtom);
   const setPermissions = useSetAtom(permissionsAtom);
@@ -12,7 +21,12 @@ export const JotaiInitializer = ({ children }: { children: React.ReactNode }) =>
 
   // We fetch auth details directly. If it returns 401, we know there's no session.
   // This avoids the waterfall of waiting for authClient.useSession() first.
-  const { data: authDetails, isLoading: isAuthDetailsLoading, isError, error } = useQuery({
+  const {
+    data: authDetails,
+    isLoading: isAuthDetailsLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['auth-me'],
     queryFn: async () => {
       const res = await fetch('/api/auth/me');
@@ -25,10 +39,10 @@ export const JotaiInitializer = ({ children }: { children: React.ReactNode }) =>
   });
 
   useEffect(() => {
-    console.log('JotaiInitializer Update:', { 
-      isAuthDetailsLoading, 
+    console.log('JotaiInitializer Update:', {
+      isAuthDetailsLoading,
       hasAuthDetails: !!authDetails,
-      isError 
+      isError,
     });
 
     if (isAuthDetailsLoading) {
@@ -37,7 +51,9 @@ export const JotaiInitializer = ({ children }: { children: React.ReactNode }) =>
     }
 
     if (authDetails) {
-      console.log('JotaiInitializer: Setting Auth Details', { role: authDetails.role });
+      console.log('JotaiInitializer: Setting Auth Details', {
+        role: authDetails.role,
+      });
       setUser(authDetails.user);
       setRole(authDetails.role);
       setPermissions(authDetails.permissions);
@@ -50,7 +66,16 @@ export const JotaiInitializer = ({ children }: { children: React.ReactNode }) =>
       setPermissions([]);
       setIsSessionLoading(false);
     }
-  }, [authDetails, isAuthDetailsLoading, isError, error, setUser, setRole, setPermissions, setIsSessionLoading]);
+  }, [
+    authDetails,
+    isAuthDetailsLoading,
+    isError,
+    error,
+    setUser,
+    setRole,
+    setPermissions,
+    setIsSessionLoading,
+  ]);
 
   return <>{children}</>;
 };

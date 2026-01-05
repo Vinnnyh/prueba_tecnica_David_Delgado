@@ -1,5 +1,4 @@
 import React from 'react';
-import { PageHeader } from '@/components/molecules/page-header';
 import { PermissionGuard } from '@/components/atoms/permission-guard';
 
 interface DashboardTemplateProps {
@@ -17,11 +16,11 @@ export const DashboardTemplate = ({
   charts,
   table,
   modal,
-  permission = "movements:view"
+  permission = 'movements:view',
 }: DashboardTemplateProps) => {
   return (
     <PermissionGuard permission={permission}>
-      <div className="flex flex-col gap-8">
+      <div className='flex flex-col gap-8'>
         {header}
         {stats}
         {charts}

@@ -14,13 +14,13 @@ export const Header = () => {
     try {
       await authClient.signOut();
       router.push('/login');
-    } catch (error) {
-      console.error('Logout failed', error);
+    } catch {
+      // Handle error
     }
   };
 
   return (
-    <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 shrink-0 bg-brand-bg/50 backdrop-blur-md z-20">
+    <header className='h-20 border-b border-white/5 flex items-center justify-between px-8 shrink-0 bg-brand-bg/50 backdrop-blur-md z-20'>
       <WelcomeMessage name={user?.name} />
       <UserActions onLogout={handleLogout} />
     </header>

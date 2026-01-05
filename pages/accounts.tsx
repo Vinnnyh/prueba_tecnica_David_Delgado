@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { userAtom, isSessionLoadingAtom } from '@/lib/auth/atoms';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { PageHeader } from '@/components/molecules/page-header';
 import { UserTable } from '@/components/organisms/user-table';
 import { ListTemplate } from '@/components/templates/list-template';
@@ -26,9 +26,12 @@ interface Role {
 export default function AccountsPage() {
   const user = useAtomValue(userAtom);
   const isSessionLoading = useAtomValue(isSessionLoadingAtom);
-  const queryClient = useQueryClient();
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{ name: string; phone: string; roleId: string } | null>(null);
+  const [editValues, setEditValues] = useState<{
+    name: string;
+    phone: string;
+    roleId: string;
+  } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const { data: users = [], isLoading: isUsersLoading } = useQuery<UserData[]>({
@@ -55,7 +58,7 @@ export default function AccountsPage() {
       }
       return res.json();
     },
-    enabled: !!user && !isSessionLoading
+    enabled: !!user && !isSessionLoading,
   });
 
   const isLoading = isUsersLoading || isRolesLoading;
@@ -65,17 +68,17 @@ export default function AccountsPage() {
     setEditValues({
       name: user.name,
       phone: user.phone || '',
-      roleId: user.role?.id || ''
+      roleId: user.role?.id || '',
     });
   };
 
   const handleUpdateUser = async () => {
     if (!editingUserId || !editValues) return;
-    
-    const originalUser = users.find(u => u.id === editingUserId);
-    const hasChanged = 
-      editValues.name !== originalUser?.name || 
-      editValues.phone !== (originalUser?.phone || '') || 
+
+    const originalUser = users.find((u) => u.id === editingUserId);
+    const hasChanged =
+      editValues.name !== originalUser?.name ||
+      editValues.phone !== (originalUser?.phone || '') ||
       editValues.roleId !== originalUser?.role?.id;
 
     if (!hasChanged) {
@@ -91,7 +94,7 @@ export default function AccountsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editValues),
       });
-      
+
       if (res.ok) {
         window.location.reload();
       } else {
@@ -99,19 +102,18 @@ export default function AccountsPage() {
         alert(`Error: ${data.message || 'Failed to update user'}`);
         setIsSaving(false);
       }
-    } catch (error) {
-      console.error('Error updating user', error);
+    } catch {
       setIsSaving(false);
     }
   };
 
   return (
     <ListTemplate
-      permission="users:view"
+      permission='users:view'
       header={
-        <PageHeader 
-          title="Accounts Management" 
-          description="Manage user roles and permissions"
+        <PageHeader
+          title='Accounts Management'
+          description='Manage user roles and permissions'
         />
       }
       content={
@@ -123,7 +125,10 @@ export default function AccountsPage() {
           editValues={editValues}
           isSaving={isSaving}
           onStartEdit={handleStartEdit}
-          onCancelEdit={() => { setEditingUserId(null); setEditValues(null); }}
+          onCancelEdit={() => {
+            setEditingUserId(null);
+            setEditValues(null);
+          }}
           onSaveEdit={handleUpdateUser}
           onEditValueChange={setEditValues}
         />

@@ -6,8 +6,8 @@ const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false });
 
 const ApiDocs = () => {
   return (
-    <div className="min-h-screen bg-white">
-      <SwaggerUI url="/api/docs/swagger.json" />
+    <div className='min-h-screen bg-white'>
+      <SwaggerUI url='/api/docs/swagger.json' />
     </div>
   );
 };

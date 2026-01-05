@@ -10,12 +10,12 @@ import { useExportMovements } from '@/lib/hooks/use-export-movements';
 import { useQueryClient } from '@tanstack/react-query';
 import { DashboardTemplate } from '@/components/templates/dashboard-template';
 
-const Home = () => {
+export default function Home() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -24,7 +24,7 @@ const Home = () => {
     page: currentPage,
     pageSize,
     search: searchQuery,
-    dateRange
+    dateRange,
   });
 
   const { handleExport } = useExportMovements();
@@ -55,28 +55,30 @@ const Home = () => {
     totalOutcome: 0,
     balance: 0,
     historicalBalance: 0,
-    chartData: []
+    chartData: [],
   };
 
   return (
     <DashboardTemplate
-      header={<PageHeader title="Dashboard Overview" />}
+      header={<PageHeader title='Dashboard Overview' />}
       stats={<StatsGrid stats={stats} />}
       charts={
-        <DashboardCharts 
-          chartData={stats.chartData} 
-          totalIncome={stats.totalIncome} 
-          totalExpense={stats.totalOutcome} 
+        <DashboardCharts
+          chartData={stats.chartData}
+          totalIncome={stats.totalIncome}
+          totalExpense={stats.totalOutcome}
         />
       }
-      modal={showForm ? (
-        <TransactionForm 
-          onClose={() => setShowForm(false)} 
-          onSuccess={handleSuccess} 
-        />
-      ) : null}
+      modal={
+        showForm ? (
+          <TransactionForm
+            onClose={() => setShowForm(false)}
+            onSuccess={handleSuccess}
+          />
+        ) : null
+      }
       table={
-        <TransactionTable 
+        <TransactionTable
           movements={data?.movements || []}
           isLoading={isLoading}
           searchQuery={searchQuery}
@@ -95,6 +97,4 @@ const Home = () => {
       }
     />
   );
-};
-
-export default Home;
+}

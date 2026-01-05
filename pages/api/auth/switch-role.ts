@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 /**
  * @openapi
@@ -30,14 +30,17 @@ import prisma from '@/lib/prisma';
  *       500:
  *         description: Internal server error
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ message: 'Method not allowed' });
     }
 
     const session = await auth.api.getSession({
-      headers: new Headers(req.headers as any),
+      headers: new Headers(req.headers as Record<string, string>),
     });
 
     if (!session) {
@@ -65,7 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ message: `Role switched to ${targetRole}` });
   } catch (error) {
-    console.error('Error switching role:', error);
-    return res.status(500).json({ message: 'Internal server error', error: String(error) });
+    return res
+      .status(500)
+      .json({ message: 'Internal server error', error: String(error) });
   }
 }

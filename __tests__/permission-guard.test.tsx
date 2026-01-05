@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { PermissionGuard } from '@/components/atoms/permission-guard';
 import { useAtomValue } from 'jotai';
-import { userAtom, permissionsAtom, isAdminAtom, isSessionLoadingAtom } from '@/lib/auth/atoms';
+import {
+  userAtom,
+  permissionsAtom,
+  isAdminAtom,
+  isSessionLoadingAtom,
+} from '@/lib/auth/atoms';
 import React from 'react';
 
 // Mock jotai
@@ -38,7 +43,7 @@ describe('PermissionGuard Component', () => {
     });
 
     render(
-      <PermissionGuard permission="users:view">
+      <PermissionGuard permission='users:view'>
         <div>Protected Content</div>
       </PermissionGuard>
     );
@@ -56,7 +61,7 @@ describe('PermissionGuard Component', () => {
     });
 
     render(
-      <PermissionGuard permission="users:view">
+      <PermissionGuard permission='users:view'>
         <div>Protected Content</div>
       </PermissionGuard>
     );
@@ -75,7 +80,7 @@ describe('PermissionGuard Component', () => {
     });
 
     render(
-      <PermissionGuard permission="any:permission">
+      <PermissionGuard permission='any:permission'>
         <div>Protected Content</div>
       </PermissionGuard>
     );
@@ -93,7 +98,10 @@ describe('PermissionGuard Component', () => {
     });
 
     render(
-      <PermissionGuard permission="secret:view" fallback={<div>Custom Fallback</div>}>
+      <PermissionGuard
+        permission='secret:view'
+        fallback={<div>Custom Fallback</div>}
+      >
         <div>Protected Content</div>
       </PermissionGuard>
     );

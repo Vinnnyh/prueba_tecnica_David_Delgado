@@ -9,5 +9,5 @@ async function list() {
 }
 
 list()
-  .catch(e => console.error(e))
+  .catch((e) => console.error(e))
   .finally(() => prisma.$disconnect());

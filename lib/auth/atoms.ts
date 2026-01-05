@@ -17,4 +17,3 @@ export const isSessionLoadingAtom = atom<boolean>(true);
 
 // Derived atoms for convenience
 export const isAdminAtom = atom((get) => get(roleAtom) === 'ADMIN');
-

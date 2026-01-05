@@ -5,14 +5,29 @@ const prisma = new PrismaClient();
 async function main() {
   // 1. Define Permissions
   const permissions = [
-    { name: 'movements:view', description: 'Can view the dashboard and transaction list' },
+    {
+      name: 'movements:view',
+      description: 'Can view the dashboard and transaction list',
+    },
     { name: 'movements:create', description: 'Can create new movements' },
-    { name: 'movements:export', description: 'Can export transactions to CSV/Excel' },
-    { name: 'users:view', description: 'Can view the list of users and their basic info' },
+    {
+      name: 'movements:export',
+      description: 'Can export transactions to CSV/Excel',
+    },
+    {
+      name: 'users:view',
+      description: 'Can view the list of users and their basic info',
+    },
     { name: 'users:edit', description: 'Can manage user details' },
-    { name: 'roles:view', description: 'Can view the roles and permissions page' },
+    {
+      name: 'roles:view',
+      description: 'Can view the roles and permissions page',
+    },
     { name: 'roles:edit', description: 'Can create, edit and delete roles' },
-    { name: 'admin:view', description: 'Can access the global admin dashboard' },
+    {
+      name: 'admin:view',
+      description: 'Can access the global admin dashboard',
+    },
     { name: 'profile:edit', description: 'Can edit own profile details' },
   ];
 
@@ -66,9 +81,11 @@ async function main() {
     });
   }
 
-
-  const userPermissions = allPermissions.filter((p: any) => 
-    p.name === 'movements:view' || p.name === 'movements:create' || p.name === 'profile:edit'
+  const userPermissions = allPermissions.filter(
+    (p: any) =>
+      p.name === 'movements:view' ||
+      p.name === 'movements:create' ||
+      p.name === 'profile:edit'
   );
 
   for (const p of userPermissions) {

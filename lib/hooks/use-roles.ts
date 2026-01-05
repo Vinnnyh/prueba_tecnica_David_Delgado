@@ -13,7 +13,7 @@ export interface Role {
   permissions: Permission[];
 }
 
-export function useRoles() {
+export const useRoles = () => {
   const queryClient = useQueryClient();
 
   const rolesQuery = useQuery<Role[]>({
@@ -35,7 +35,11 @@ export function useRoles() {
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: async (data: { name: string; description?: string; permissionIds: string[] }) => {
+    mutationFn: async (data: {
+      name: string;
+      description?: string;
+      permissionIds: string[];
+    }) => {
       const res = await fetch('/api/roles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +57,15 @@ export function useRoles() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name: string; description?: string; permissionIds: string[] }) => {
+    mutationFn: async ({
+      id,
+      ...data
+    }: {
+      id: string;
+      name: string;
+      description?: string;
+      permissionIds: string[];
+    }) => {
       const res = await fetch(`/api/roles/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -97,4 +109,4 @@ export function useRoles() {
     isUpdating: updateRoleMutation.isPending,
     isDeleting: deleteRoleMutation.isPending,
   };
-}
+};

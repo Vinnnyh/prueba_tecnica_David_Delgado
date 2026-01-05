@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/auth/permissions';
 
 /**
@@ -34,14 +34,17 @@ import { hasPermission } from '@/lib/auth/permissions';
  *       500:
  *         description: Internal server error
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   if (req.method !== 'PATCH' && req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
     const session = await auth.api.getSession({
-      headers: new Headers(req.headers as any),
+      headers: new Headers(req.headers as Record<string, string>),
     });
 
     if (!session) {
@@ -60,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: { 
+      data: {
         name,
         phone: phone || null,
       },
@@ -68,10 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json(updatedUser);
   } catch (error) {
-    console.error('Update profile error:', error);
-    return res.status(500).json({ 
-      message: 'Internal server error', 
-      error: error instanceof Error ? error.message : String(error) 
+    return res.status(500).json({
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 }

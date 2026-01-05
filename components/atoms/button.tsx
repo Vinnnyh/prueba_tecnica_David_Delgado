@@ -11,13 +11,30 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', isLoading, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = 'primary',
+      size = 'md',
+      isLoading,
+      leftIcon,
+      rightIcon,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const variants = {
-      primary: 'bg-brand-accent text-white hover:opacity-90 shadow-lg shadow-brand-accent/20',
-      secondary: 'bg-white/5 text-white hover:bg-white/10 border border-white/10',
-      outline: 'bg-transparent border border-white/10 text-gray-400 hover:text-white hover:bg-white/5',
+      primary:
+        'bg-brand-accent text-white hover:opacity-90 shadow-lg shadow-brand-accent/20',
+      secondary:
+        'bg-white/5 text-white hover:bg-white/10 border border-white/10',
+      outline:
+        'bg-transparent border border-white/10 text-gray-400 hover:text-white hover:bg-white/5',
       ghost: 'bg-transparent text-gray-400 hover:text-white hover:bg-white/5',
-      danger: 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20',
+      danger:
+        'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20',
     };
 
     const sizes = {
@@ -40,8 +57,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {isLoading ? (
-          <div className="flex items-center justify-center h-5">
-            <LoadingDots className="w-12" dotClassName={variant === 'primary' ? 'bg-white' : 'bg-brand-accent'} />
+          <div className='flex items-center justify-center h-5'>
+            <LoadingDots
+              className='w-12'
+              dotClassName={
+                variant === 'primary' ? 'bg-white' : 'bg-brand-accent'
+              }
+            />
           </div>
         ) : (
           <>

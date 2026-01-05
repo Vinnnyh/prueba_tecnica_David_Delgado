@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { hasPermission } from '@/lib/auth/permissions';
 
 /**
@@ -44,10 +44,13 @@ import { hasPermission } from '@/lib/auth/permissions';
  *       403:
  *         description: Forbidden
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
     const session = await auth.api.getSession({
-      headers: new Headers(req.headers as any),
+      headers: new Headers(req.headers as Record<string, string>),
     });
 
     if (!session) {
@@ -115,7 +118,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(405).json({ message: 'Method not allowed' });
   } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({ message: 'Internal server error', error: String(error) });
+    return res
+      .status(500)
+      .json({ message: 'Internal server error', error: String(error) });
   }
 }
